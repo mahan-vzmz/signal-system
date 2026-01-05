@@ -196,3 +196,78 @@ plt.show()
 # برای مشاهده اینکه آیا خطوط صاف (Flat) یا نویزی اصلاح شده‌اند
 print("Plotting Final Cleaned Epochs...")
 epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)
+
+# ==========================================
+# Ghasem Step 3: Artifact Removal using ICA
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 3: ICA (Independent Component Analysis)")
+print("=" * 30)
+
+from mne.preprocessing import ICA
+
+# 1. تنظیم و آموزش ICA
+# n_components: تعداد مولفه‌هایی که می‌خواهیم استخراج کنیم. معمولاً 15 یا 20 عدد مناسبی است.
+# method: روش انجام کار که 'fastica' یا 'picard' معمول هستند.
+ica = ICA(n_components=15, max_iter='auto', random_state=97)
+
+print("Fitting ICA to cleaned epochs...")
+# مدل را روی اپوک‌های تمیز شده فیت می‌کنیم
+ica.fit(epochs_clean)
+
+# 2. نمایش مولفه‌ها (بسیار مهم برای پاسخ به سوال تصویر)
+# این دستور نقشه‌های توپوگرافی (کله‌ها) را نشان می‌دهد.
+# >> دنبال کله‌ای بگردید که در قسمت جلوی پیشانی (بالای دایره) کاملاً قرمز یا آبی است.
+print("Plotting ICA components (Topomaps)... Look for Blink artifacts (Frontal activity)")
+ica.plot_components()
+plt.show()
+
+# 3. نمایش سری زمانی مولفه‌ها
+# این نمودار نشان می‌دهد هر مولفه در طول زمان چه شکلی است.
+# >> مولفه پلک زدن معمولاً پالس‌های بزرگ و مشخصی دارد که با بقیه فرق دارد.
+print("Plotting ICA sources (Time Series)...")
+ica.plot_sources(epochs_clean, block=True)
+
+# ---------------------------------------------------------
+# 4. انتخاب و حذف دستی مولفه‌های خراب
+# ---------------------------------------------------------
+# نکته مهم: در پروژه‌های واقعی، شما باید با نگاه کردن به نمودارهای بالا،
+# شماره مولفه‌هایی که شبیه پلک زدن یا ضربان قلب هستند را پیدا کنید.
+# مثلا اگر در نمودار دیدید مولفه شماره 0 و 2 شبیه پلک هستند، آن‌ها را در لیست زیر می‌گذارید.
+
+# فعلاً به صورت پیش‌فرض خالی است یا یک مثال می‌زنیم.
+# شما باید بعد از اجرای کد و دیدن نمودارها، این لیست را آپدیت کنید.
+# مثال: ica.exclude = [0, 4]  <-- یعنی مولفه 0 و 4 حذف شوند
+ica.exclude = []  # <--- اینجا شماره مولفه‌های خراب را وارد کنید
+
+print(f"Excluded components: {ica.exclude}")
+
+# 5. اعمال ICA و بازسازی سیگنال تمیز
+print("Applying ICA to reconstruct the signal...")
+epochs_final = epochs_clean.copy()
+ica.apply(epochs_final)
+
+# 6. مقایسه قبل و بعد از ICA
+print("Visual comparison: Before vs After ICA")
+# رسم یک کانال فرونتال (جلوی سر) که معمولا پلک دارد (مثلا Fp1 یا Fp2 یا Fz)
+# نکته: باید ببینیم چه کانال‌هایی دارید. معمولا Fp1/Fp2 بهترین هستند.
+# اگر نام کانال‌ها استاندارد است:
+target_ch = [ch for ch in epochs_final.ch_names if 'Fp' in ch or 'Fz' in ch]
+if target_ch:
+    chosen_ch = target_ch[0]
+    print(f"Plotting channel {chosen_ch} to see the effect.")
+
+    # گرفتن داده‌ها برای رسم
+    original_data = epochs_clean.get_data(picks=chosen_ch)[0, 0, :]  # اولین اپوک
+    cleaned_data = epochs_final.get_data(picks=chosen_ch)[0, 0, :]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(original_data, label='Original (with Artifacts)', color='red', alpha=0.5)
+    plt.plot(cleaned_data, label='Cleaned (ICA Applied)', color='blue')
+    plt.title(f'Effect of ICA on Channel {chosen_ch}')
+    plt.legend()
+    plt.show()
+else:
+    print("No Frontal channel found for comparison plotting.")
+
+print("Step 3 Complete. 'epochs_final' is your clean data.")

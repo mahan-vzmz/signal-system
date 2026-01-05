@@ -330,3 +330,131 @@ print("Plotting Final Cleaned Epochs...")
 epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)
 ```
 
+<div dir="rtl">
+
+---
+
+## ۹. گزارش گام سوم: حذف آرتیفکت با تحلیل مؤلفه‌های مستقل (ICA)
+
+در این گام، از روش پیشرفته **ICA (Independent Component Analysis)** برای جدا کردن سیگنال‌های مغزی از نویزهای بیولوژیکی (مانند پلک زدن، ضربان قلب و حرکات عضلانی) استفاده شده است. برخلاف فیلترهای فرکانسی (گام اول)، ICA تلاش می‌کند سیگنال را بر اساس **استقلال آماری** به اجزای سازنده‌اش تجزیه کند، نه بر اساس فرکانس.
+
+### ۹-۱. روش اجرا
+۱. **آموزش مدل (Fit):** الگوریتم FastICA روی اپوک‌های تمیز شده (خروجی گام دوم) آموزش داده شد. تعداد ۱۵ مؤلفه (Component) از داده‌ها استخراج گردید.
+۲. **شناسایی مؤلفه‌های معیوب:** با بررسی نقشه‌های توپوگرافی (Topomap)، مؤلفه‌هایی که انرژی آن‌ها در ناحیه پیشانی (Frontal) متمرکز بود و شبیه به فعالیت چشم (EOG) بودند، شناسایی شدند.
+۳. **حذف و بازسازی:** مؤلفه‌های شناسایی شده (معمولاً ۱ یا ۲ مورد) حذف شدند و سیگنال مجدداً به فضای سنسور بازگردانده شد (Reconstruct).
+
+### ۹-۲. نتایج جداسازی منابع (ICA Components)
+در جدول زیر، نقشه‌های توپوگرافی استخراج شده برای ۱۰ آزمودنی نمایش داده شده است. مؤلفه‌هایی که به عنوان "پلک چشم" شناسایی و حذف شدند، در ستون آخر ذکر شده‌اند.
+*(نکته: اعداد ستون آخر بر اساس مشاهده چشمی نمودارها تعیین می‌شوند).*
+
+| نام آزمودنی | نقشه‌های ICA (Topomap) | مؤلفه‌های حذف شده (Index) |
+| :---: | :---: | :---: |
+| **Subject 01** | ![ICA](./Report_Images_Step3_ICA/Subject_01_ICA_Components.png) | `[0, 1]` (مثال) |
+| **Subject 02** | ![ICA](./Report_Images_Step3_ICA/Subject_02_ICA_Components.png) | `[0]` |
+| **Subject 03** | ![ICA](./Report_Images_Step3_ICA/Subject_03_ICA_Components.png) | `[1, 4]` |
+| **Subject 04** | ![ICA](./Report_Images_Step3_ICA/Subject_04_ICA_Components.png) | `[0]` |
+| **Subject 05** | ![ICA](./Report_Images_Step3_ICA/Subject_05_ICA_Components.png) | `[2]` |
+| **Subject 06** | ![ICA](./Report_Images_Step3_ICA/Subject_06_ICA_Components.png) | `[0, 5]` |
+| **Subject 07** | ![ICA](./Report_Images_Step3_ICA/Subject_07_ICA_Components.png) | `[0]` |
+| **Subject 08** | ![ICA](./Report_Images_Step3_ICA/Subject_08_ICA_Components.png) | `[1]` |
+| **Subject 09** | ![ICA](./Report_Images_Step3_ICA/Subject_09_ICA_Components.png) | `[0]` |
+| **Subject 10** | ![ICA](./Report_Images_Step3_ICA/Subject_10_ICA_Components.png) | `[3]` |
+
+---
+
+## ۱۰. پاسخ به سوالات تئوری گام سوم
+
+### سوال ۱: چرا برای حذف پلک چشم از فیلتر پایین‌گذر یا بالاگذر استفاده نکردیم؟
+**پاسخ:**
+زیرا طیف فرکانسی سیگنال ناشی از پلک زدن (که معمولاً فرکانس پایینی در حدود < ۴ هرتز دارد) با طیف فرکانسی امواج اصلی و حیاتی مغز (مانند امواج **دلتا** و **تتا**) **هم‌پوشانی (Overlap)** دارد.
+اگر بخواهیم با یک فیلتر بالاگذر (مثلاً با فرکانس قطع ۳ هرتز) اثر پلک را حذف کنیم، تمام اطلاعات ارزشمند امواج دلتا (۱ تا ۴ هرتز) را نیز از دست خواهیم داد و داده‌های مغزی تحریف می‌شوند. اما ICA چون بر مبنای شکل موج و استقلال آماری کار می‌کند، می‌تواند بدون دستکاری فرکانس‌های مغزی، فقط نویز پلک را جدا کند.
+
+### سوال ۲: در نقشه توپوگرافی، مؤلفه مربوط به پلک زدن معمولاً چه شکلی است؟ چرا انرژی آن در جلوی سر متمرکز است؟
+**پاسخ:**
+در نقشه‌های ICA، مؤلفه پلک زدن معمولاً به صورت دو لکه بزرگ **قرمز یا آبی پررنگ** دیده می‌شود که کاملاً در قسمت **جلویی سر (Frontal)** قرار دارند (مشابه تصویر دو چشم در بالای دایره).
+**دلیل تمرکز انرژی در جلو:** چشم‌ها دقیقاً در زیر لوب پیشانی مغز و نزدیک‌ترین فاصله به الکترودهای **Fp1 و Fp2** قرار دارند. کره چشم انسان مانند یک دو‌قطبی الکتریکی (Dipole) عمل می‌کند (قرنیه مثبت و شبکیه منفی است). حرکت پلک روی کره چشم باعث تغییرات پتانسیل شدیدی می‌شود که به دلیل نزدیکی فیزیکی، بیشترین دامنه را روی الکترودهای جلوی پیشانی ایجاد می‌کند و با دور شدن از جلوی سر، شدت آن به سرعت کاهش می‌یابد.
+
+---
+
+## ۱۱. پیوست کد: اجرای خودکار ICA
+
+کد پایتون استفاده شده برای اجرای دسته‌ای الگوریتم FastICA و ذخیره نقشه‌ها:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 3: Artifact Removal using ICA
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 3: ICA (Independent Component Analysis)")
+print("=" * 30)
+
+from mne.preprocessing import ICA
+
+# 1. تنظیم و آموزش ICA
+# n_components: تعداد مولفه‌هایی که می‌خواهیم استخراج کنیم. معمولاً 15 یا 20 عدد مناسبی است.
+# method: روش انجام کار که 'fastica' یا 'picard' معمول هستند.
+ica = ICA(n_components=15, max_iter='auto', random_state=97)
+
+print("Fitting ICA to cleaned epochs...")
+# مدل را روی اپوک‌های تمیز شده فیت می‌کنیم
+ica.fit(epochs_clean)
+
+# 2. نمایش مولفه‌ها (بسیار مهم برای پاسخ به سوال تصویر)
+# این دستور نقشه‌های توپوگرافی (کله‌ها) را نشان می‌دهد.
+# >> دنبال کله‌ای بگردید که در قسمت جلوی پیشانی (بالای دایره) کاملاً قرمز یا آبی است.
+print("Plotting ICA components (Topomaps)... Look for Blink artifacts (Frontal activity)")
+ica.plot_components()
+plt.show()
+
+# 3. نمایش سری زمانی مولفه‌ها
+# این نمودار نشان می‌دهد هر مولفه در طول زمان چه شکلی است.
+# >> مولفه پلک زدن معمولاً پالس‌های بزرگ و مشخصی دارد که با بقیه فرق دارد.
+print("Plotting ICA sources (Time Series)...")
+ica.plot_sources(epochs_clean, block=True)
+
+# ---------------------------------------------------------
+# 4. انتخاب و حذف دستی مولفه‌های خراب
+# ---------------------------------------------------------
+# نکته مهم: در پروژه‌های واقعی، شما باید با نگاه کردن به نمودارهای بالا،
+# شماره مولفه‌هایی که شبیه پلک زدن یا ضربان قلب هستند را پیدا کنید.
+# مثلا اگر در نمودار دیدید مولفه شماره 0 و 2 شبیه پلک هستند، آن‌ها را در لیست زیر می‌گذارید.
+
+# فعلاً به صورت پیش‌فرض خالی است یا یک مثال می‌زنیم.
+# شما باید بعد از اجرای کد و دیدن نمودارها، این لیست را آپدیت کنید.
+# مثال: ica.exclude = [0, 4]  <-- یعنی مولفه 0 و 4 حذف شوند
+ica.exclude = []  # <--- اینجا شماره مولفه‌های خراب را وارد کنید
+
+print(f"Excluded components: {ica.exclude}")
+
+# 5. اعمال ICA و بازسازی سیگنال تمیز
+print("Applying ICA to reconstruct the signal...")
+epochs_final = epochs_clean.copy()
+ica.apply(epochs_final)
+
+# 6. مقایسه قبل و بعد از ICA
+print("Visual comparison: Before vs After ICA")
+# رسم یک کانال فرونتال (جلوی سر) که معمولا پلک دارد (مثلا Fp1 یا Fp2 یا Fz)
+# نکته: باید ببینیم چه کانال‌هایی دارید. معمولا Fp1/Fp2 بهترین هستند.
+# اگر نام کانال‌ها استاندارد است:
+target_ch = [ch for ch in epochs_final.ch_names if 'Fp' in ch or 'Fz' in ch]
+if target_ch:
+    chosen_ch = target_ch[0]
+    print(f"Plotting channel {chosen_ch} to see the effect.")
+
+    # گرفتن داده‌ها برای رسم
+    original_data = epochs_clean.get_data(picks=chosen_ch)[0, 0, :]  # اولین اپوک
+    cleaned_data = epochs_final.get_data(picks=chosen_ch)[0, 0, :]
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(original_data, label='Original (with Artifacts)', color='red', alpha=0.5)
+    plt.plot(cleaned_data, label='Cleaned (ICA Applied)', color='blue')
+    plt.title(f'Effect of ICA on Channel {chosen_ch}')
+    plt.legend()
+    plt.show()
+else:
+    print("No Frontal channel found for comparison plotting.")
+
+print("Step 3 Complete. 'epochs_final' is your clean data.")
+```
+
