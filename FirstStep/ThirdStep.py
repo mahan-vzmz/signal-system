@@ -4,103 +4,122 @@ from autoreject import AutoReject
 from mne.preprocessing import ICA
 import glob
 import os
+import numpy as np
 
 # 1. تنظیم مسیرها
 # -----------------------------
 input_folder = "C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/"
-output_folder = "Report_Images_Step3_ICA"  # پوشه خروجی جدید
+output_folder = "Report_Images_Step3_Auto"  # پوشه خروجی برای حالت اتوماتیک
 os.makedirs(output_folder, exist_ok=True)
 
-print(f"ICA Images will be saved in: {os.getcwd()}\\{output_folder}")
+print(f"Images will be saved in: {os.getcwd()}\\{output_folder}")
 
 # پیدا کردن فایل‌ها
 all_files = glob.glob(os.path.join(input_folder, "Subject_*.edf"))
 all_files.sort()
 
-# تنظیمات
+# تنظیمات پردازش
 low_cut = 0.5
 high_cut = 45.0
 notch_freq = 50.0
 epoch_dur = 2.0
-n_ica_components = 15  # تعداد مولفه‌های ICA
+n_ica_components = 15
 
 # ==========================================
-# شروع حلقه پردازش
+# شروع حلقه پردازش روی ۱۰ فایل
 # ==========================================
 for file_path in all_files:
     subject_name = os.path.splitext(os.path.basename(file_path))[0]
-    print(f"\n" + "=" * 40)
-    print(f"Processing ICA for: {subject_name}")
-    print("=" * 40)
+    print(f"\n" + "=" * 50)
+    print(f"Processing: {subject_name}")
+    print("=" * 50)
 
     try:
-        # --- الف) آماده‌سازی داده (تکرار مراحل قبل) ---
+        # --- الف) بارگذاری و پیش‌پردازش ---
         raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
 
-        # اصلاح نام کانال‌ها
+        # اصلاح نام‌ها
         mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
         raw.rename_channels(mapping)
-
-        # تنظیم Trig/Montage
-        if 'Trig' in raw.ch_names:
-            raw.set_channel_types({'Trig': 'stim'})
+        if 'Trig' in raw.ch_names: raw.set_channel_types({'Trig': 'stim'})
 
         try:
-            montage = mne.channels.make_standard_montage('standard_1020')
-            raw.set_montage(montage, match_case=False)
+            raw.set_montage('standard_1020', match_case=False)
         except:
-            print("   Warning: Montage not set (ICA maps might look weird).")
+            pass  # مونتاژ مهم نیست اگر فقط دنبال شکل موج هستیم
 
         raw.pick_types(eeg=True, eog=False, stim=False, exclude='bads')
-
-        # فیلتر
         raw.notch_filter(notch_freq, verbose=False)
         raw.filter(low_cut, high_cut, verbose=False)
 
-        # قطعه‌بندی
+        # ساخت اپوک و تمیزسازی با AutoReject
         epochs = mne.make_fixed_length_epochs(raw, duration=epoch_dur, preload=True, verbose=False)
-
-        # تمیزسازی با AutoReject (برای اینکه ICA روی داده تمیز یاد بگیرد)
-        # نکته: برای سرعت بیشتر، پارامترها را کمی سبک‌تر گرفتیم
         ar = AutoReject(n_interpolate=[1, 2], consensus=[0.6], random_state=42, verbose=False)
         epochs_clean = ar.fit_transform(epochs)
 
         # --- ب) اجرای ICA ---
         print("   -> Fitting ICA...")
         ica = ICA(n_components=n_ica_components, max_iter='auto', random_state=97)
-        ica.fit(epochs_clean)
+        ica.fit(epochs_clean, verbose=False)
 
-        # --- ج) ذخیره تصاویر مولفه‌ها (Topomap) ---
-        # این مهم‌ترین بخش است: ذخیره عکسی که نشان می‌دهد هر مولفه چه شکلی است
-        print("   -> Saving ICA Components Image...")
+        # --- ج) شناسایی اتوماتیک پلک (Auto-Detect Blinks) ---
+        target_eog_channel = None
+        # اولویت با کانال‌های پیشانی است
+        for ch in ['Fp1', 'Fp2', 'Fz']:
+            if ch in epochs_clean.ch_names:
+                target_eog_channel = ch
+                break
 
-        # رسم کامپوننت‌ها
-        fig_ica = ica.plot_components(show=False)
+        if target_eog_channel:
+            print(f"   -> Using '{target_eog_channel}' to detect artifacts.")
+            # پیدا کردن مولفه‌های خراب با آستانه 3.0 (Z-score)
+            eog_inds, scores = ica.find_bads_eog(epochs_clean, ch_name=target_eog_channel, threshold=3.0)
 
-        # اضافه کردن عنوان
-        # (متاسفانه plot_components عنوان کلی ندارد، روی فایل ذخیره شده اسم را می‌زنیم)
-        save_path_ica = os.path.join(output_folder, f"{subject_name}_ICA_Components.png")
-        fig_ica.savefig(save_path_ica)
-        plt.close(fig_ica)
+            # ثبت مولفه‌های حذفی
+            ica.exclude = eog_inds
+            print(f"   -> Components marked for removal: {eog_inds}")
 
-        print(f"   -> Saved: {subject_name}_ICA_Components.png")
-
-        # --- د) (اختیاری) شناسایی اتوماتیک پلک چشم ---
-        # اگر بخواهیم هوشمند عمل کنیم و فقط گزارش نگیریم:
-        # معمولا کانال Fp1 یا Fp2 نماینده خوبی برای چشم هستند.
-        eog_inds, scores = ica.find_bads_eog(epochs_clean, ch_name='Fp1', threshold=2.5)
-
-        if eog_inds:
-            print(f"   -> Auto-detected potential blink components: {eog_inds}")
-            # ذخیره یک فایل متنی کنار عکس‌ها که بگوید سیستم چه پیشنهادی داده
-            with open(os.path.join(output_folder, "Suggested_Bads.txt"), "a") as f:
-                f.write(f"{subject_name}: {eog_inds}\n")
+            # ذخیره نمودار اسکور (اختیاری - نشان می‌دهد چرا حذف شده)
+            if eog_inds:
+                fig_sc = ica.plot_scores(scores, exclude=eog_inds, show=False)
+                fig_sc.savefig(os.path.join(output_folder, f"{subject_name}_ICA_Scores.png"))
+                plt.close(fig_sc)
         else:
-            print("   -> No clear blink artifacts detected automatically.")
+            print("   -> Warning: No frontal channel found.")
+
+        # --- د) ذخیره Topomap (با علامت‌گذاری قرمز) ---
+        # خود MNE روی مولفه‌هایی که در ica.exclude هستند خط می‌کشد
+        fig_topo = ica.plot_components(show=False)
+        fig_topo.savefig(os.path.join(output_folder, f"{subject_name}_ICA_Topomaps.png"))
+        plt.close(fig_topo)
+        print(f"   -> Saved Topomaps.")
+
+        # --- هـ) اعمال ICA و مقایسه سیگنال ---
+        epochs_final = epochs_clean.copy()
+        ica.apply(epochs_final, verbose=False)
+
+        if target_eog_channel:
+            # رسم نمودار مقایسه روی کانال پیشانی
+            fig_comp = plt.figure(figsize=(10, 5))
+
+            # میانگین‌گیری نمی‌کنیم، اولین اپوک را نشان می‌دهیم تا اثر لحظه‌ای مشخص شود
+            # (معمولا اپوک اول یا دوم نویز دارد)
+            data_orig = epochs_clean.get_data(picks=target_eog_channel)[0, 0, :]
+            data_clean = epochs_final.get_data(picks=target_eog_channel)[0, 0, :]
+
+            plt.plot(data_orig, color='red', alpha=0.5, label='Original (Artifact)')
+            plt.plot(data_clean, color='blue', label='Cleaned (ICA)')
+            plt.title(f"{subject_name}: ICA Effect on {target_eog_channel}")
+            plt.legend()
+            plt.tight_layout()
+
+            fig_comp.savefig(os.path.join(output_folder, f"{subject_name}_Signal_Comparison.png"))
+            plt.close(fig_comp)
+            print(f"   -> Saved Signal Comparison.")
 
     except Exception as e:
         print(f"   !!! Error processing {subject_name}: {e}")
 
-print("\n" + "=" * 40)
-print("Done! Now check 'Report_Images_Step3_ICA' folder.")
-print("Open the images and look for 'Red/Blue' circles at the very front of the head.")
+print("\n" + "=" * 50)
+print("All Processing Done!")
+print(f"Check folder: {output_folder}")

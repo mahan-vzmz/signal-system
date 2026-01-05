@@ -198,76 +198,186 @@ print("Plotting Final Cleaned Epochs...")
 epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)
 
 # ==========================================
-# Ghasem Step 3: Artifact Removal using ICA
+# Ghasem Step 3 (AUTOMATED): Artifact Removal using ICA
 # ==========================================
 print("\n" + "=" * 30)
-print("STARTING STEP 3: ICA (Independent Component Analysis)")
+print("STARTING STEP 3: Automated ICA (EOG Removal)")
 print("=" * 30)
 
 from mne.preprocessing import ICA
 
 # 1. تنظیم و آموزش ICA
-# n_components: تعداد مولفه‌هایی که می‌خواهیم استخراج کنیم. معمولاً 15 یا 20 عدد مناسبی است.
-# method: روش انجام کار که 'fastica' یا 'picard' معمول هستند.
 ica = ICA(n_components=15, max_iter='auto', random_state=97)
 
 print("Fitting ICA to cleaned epochs...")
-# مدل را روی اپوک‌های تمیز شده فیت می‌کنیم
 ica.fit(epochs_clean)
 
-# 2. نمایش مولفه‌ها (بسیار مهم برای پاسخ به سوال تصویر)
-# این دستور نقشه‌های توپوگرافی (کله‌ها) را نشان می‌دهد.
-# >> دنبال کله‌ای بگردید که در قسمت جلوی پیشانی (بالای دایره) کاملاً قرمز یا آبی است.
-print("Plotting ICA components (Topomaps)... Look for Blink artifacts (Frontal activity)")
+# 2. شناسایی اتوماتیک مولفه‌های چشم (EOG)
+# استراتژی: استفاده از کانال Fp1 یا Fp2 به عنوان مرجع چشم
+target_eog_channel = None
+# لیست اولویت برای پیدا کردن کانال چشم
+for ch in ['Fp1', 'Fp2', 'Fz', 'Fp1-LE', 'Fp2-LE']:
+    if ch in epochs_clean.ch_names:
+        target_eog_channel = ch
+        break
+
+if target_eog_channel:
+    print(f"Using channel '{target_eog_channel}' as EOG reference for auto-detection.")
+
+    # تابع find_bads_eog به صورت خودکار مولفه‌های شبیه پلک را پیدا می‌کند
+    # threshold=3.0 معمولا استاندارد است (هر چه کمتر باشد، سخت‌گیرتر است)
+    eog_inds, scores = ica.find_bads_eog(epochs_clean, ch_name=target_eog_channel, threshold=3.0)
+
+    print(f"Auto-detected EOG components (Blinks): {eog_inds}")
+
+    # اعمال لیست حذفی
+    ica.exclude = eog_inds
+
+    # رسم نمودار امتیازها (اختیاری - برای دیدن دقت الگوریتم)
+    ica.plot_scores(scores, exclude=eog_inds, title=f"Component correlation with {target_eog_channel}")
+    plt.show()
+else:
+    print("Warning: No frontal channel (Fp1/Fp2) found! Cannot auto-detect blinks.")
+
+# 3. نمایش مولفه‌ها (برای تایید چشمی شما)
+# دور مولفه‌هایی که سیستم حذف کرده، خط قرمز کشیده می‌شود
+print("Plotting components (Red title = Marked for removal)...")
 ica.plot_components()
 plt.show()
 
-# 3. نمایش سری زمانی مولفه‌ها
-# این نمودار نشان می‌دهد هر مولفه در طول زمان چه شکلی است.
-# >> مولفه پلک زدن معمولاً پالس‌های بزرگ و مشخصی دارد که با بقیه فرق دارد.
-print("Plotting ICA sources (Time Series)...")
-ica.plot_sources(epochs_clean, block=True)
-
-# ---------------------------------------------------------
-# 4. انتخاب و حذف دستی مولفه‌های خراب
-# ---------------------------------------------------------
-# نکته مهم: در پروژه‌های واقعی، شما باید با نگاه کردن به نمودارهای بالا،
-# شماره مولفه‌هایی که شبیه پلک زدن یا ضربان قلب هستند را پیدا کنید.
-# مثلا اگر در نمودار دیدید مولفه شماره 0 و 2 شبیه پلک هستند، آن‌ها را در لیست زیر می‌گذارید.
-
-# فعلاً به صورت پیش‌فرض خالی است یا یک مثال می‌زنیم.
-# شما باید بعد از اجرای کد و دیدن نمودارها، این لیست را آپدیت کنید.
-# مثال: ica.exclude = [0, 4]  <-- یعنی مولفه 0 و 4 حذف شوند
-ica.exclude = []  # <--- اینجا شماره مولفه‌های خراب را وارد کنید
-
-print(f"Excluded components: {ica.exclude}")
-
-# 5. اعمال ICA و بازسازی سیگنال تمیز
-print("Applying ICA to reconstruct the signal...")
+# 4. اعمال ICA و بازسازی سیگنال
+print("Applying ICA to remove artifacts...")
 epochs_final = epochs_clean.copy()
 ica.apply(epochs_final)
 
-# 6. مقایسه قبل و بعد از ICA
-print("Visual comparison: Before vs After ICA")
-# رسم یک کانال فرونتال (جلوی سر) که معمولا پلک دارد (مثلا Fp1 یا Fp2 یا Fz)
-# نکته: باید ببینیم چه کانال‌هایی دارید. معمولا Fp1/Fp2 بهترین هستند.
-# اگر نام کانال‌ها استاندارد است:
-target_ch = [ch for ch in epochs_final.ch_names if 'Fp' in ch or 'Fz' in ch]
-if target_ch:
-    chosen_ch = target_ch[0]
-    print(f"Plotting channel {chosen_ch} to see the effect.")
+# 5. مقایسه قبل و بعد (Visual Comparison)
+if target_eog_channel:
+    print(f"Plotting comparison on channel {target_eog_channel}...")
 
-    # گرفتن داده‌ها برای رسم
-    original_data = epochs_clean.get_data(picks=chosen_ch)[0, 0, :]  # اولین اپوک
-    cleaned_data = epochs_final.get_data(picks=chosen_ch)[0, 0, :]
+    # گرفتن داده اولین اپوک برای مقایسه
+    original_data = epochs_clean.get_data(picks=target_eog_channel)[0, 0, :]
+    cleaned_data = epochs_final.get_data(picks=target_eog_channel)[0, 0, :]
 
     plt.figure(figsize=(10, 6))
     plt.plot(original_data, label='Original (with Artifacts)', color='red', alpha=0.5)
-    plt.plot(cleaned_data, label='Cleaned (ICA Applied)', color='blue')
-    plt.title(f'Effect of ICA on Channel {chosen_ch}')
+    plt.plot(cleaned_data, label='Cleaned (ICA Applied)', color='blue', linewidth=1.5)
+    plt.title(f'Effect of ICA on Channel {target_eog_channel}')
+    plt.xlabel('Time points')
+    plt.ylabel('Amplitude')
     plt.legend()
+    plt.grid(True)
     plt.show()
-else:
-    print("No Frontal channel found for comparison plotting.")
 
 print("Step 3 Complete. 'epochs_final' is your clean data.")
+
+# ==========================================
+# Ghasem Step 4: Final Inspection (Time & Frequency)
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 4: Time & Frequency Inspection")
+print("=" * 30)
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# تنظیمات نمودار برای زیبایی
+plt.rcParams.update({'font.size': 10})
+
+# ---------------------------------------------------------
+# بخش اول: مقایسه در حوزه زمان (Time-Domain)
+# ---------------------------------------------------------
+print("Generating Time-Domain Comparison Plot...")
+
+# انتخاب یک کانال برای نمایش
+# معمولاً کانال‌های جلوی سر (Frontal) مثل Fp1, Fp2, Fz بیشترین آرتیفکت پلک را دارند
+# ما اولین کانال موجود در لیست را انتخاب می‌کنیم یا اگر Fp1 بود آن را برمی‌داریم
+target_ch = [ch for ch in epochs_final.ch_names if 'Fp1' in ch]
+picked_ch = target_ch[0] if target_ch else epochs_final.ch_names[0]
+
+print(f"Inspecting Channel: {picked_ch}")
+
+# دریافت داده‌های خام (Raw) - برای مقایسه، ۱۰ ثانیه اول را می‌گیریم
+# نکته: چون داده خام پیوسته است و داده نهایی اپوک شده، ما سعی می‌کنیم چند اپوک نهایی را به هم بچسبانیم
+# تا طولشان برای نمایش بصری یکی شود.
+
+# گرفتن ۳ اپوک اول از داده‌های تمیز شده
+clean_data_segment = epochs_final.get_data(picks=picked_ch, copy=True)[0:3, 0, :].flatten()
+
+# گرفتن معادل زمانی آن از داده خام (برای نمایش)
+# طول زمانی که می‌خواهیم نمایش دهیم (تعداد نقاط)
+n_samples_to_plot = len(clean_data_segment)
+raw_data_segment, times = raw.get_data(picks=picked_ch, start=0, stop=n_samples_to_plot, return_times=True)
+raw_data_segment = raw_data_segment[0] # حذف بعد کانال
+
+# رسم نمودار زمانی
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=False)
+
+# نمودار داده خام
+ax1.plot(times, raw_data_segment, color='red', alpha=0.7, label='Raw Data (Drift + Artifacts)')
+ax1.set_title(f'Time Domain: RAW Data ({picked_ch})')
+ax1.set_ylabel('Amplitude (Volts)')
+ax1.legend(loc="upper right")
+ax1.grid(True, linestyle='--', alpha=0.6)
+
+# نمودار داده نهایی
+# محور زمان جدید برای داده اپوک شده
+times_clean = np.linspace(0, len(clean_data_segment)/raw.info['sfreq'], len(clean_data_segment))
+ax2.plot(times_clean, clean_data_segment, color='blue', label='Final Clean Data (Flat Baseline + No Blinks)')
+ax2.set_title(f'Time Domain: FINAL Data ({picked_ch}) - After Filter, AutoReject & ICA')
+ax2.set_xlabel('Time (s)')
+ax2.set_ylabel('Amplitude (Volts)')
+ax2.legend(loc="upper right")
+ax2.grid(True, linestyle='--', alpha=0.6)
+
+plt.tight_layout()
+plt.show()
+
+print("Check point 1: Look at the graphs above.")
+print("  - Is the Baseline flat in the blue graph? (Should be yes)")
+print("  - Are large blinks (huge spikes) removed in the blue graph? (Should be yes)")
+
+
+# ---------------------------------------------------------
+# بخش دوم: مقایسه در حوزه فرکانس (PSD Comparison)
+# ---------------------------------------------------------
+print("\nGenerating PSD Comparison Plot...")
+
+# محاسبه PSD برای داده خام
+# fmax را تا ۶۰ می‌گذاریم تا هم ۵۰ هرتز (برق) را ببینیم هم آلفا (۱۰ هرتز)
+spectrum_raw = raw.compute_psd(fmax=60, picks='eeg')
+psds_raw, freqs_raw = spectrum_raw.get_data(return_freqs=True)
+# میانگین گیری روی تمام کانال‌ها برای دیدن طیف کلی
+psd_raw_mean = 10 * np.log10(psds_raw.mean(axis=0))
+
+# محاسبه PSD برای داده نهایی (Clean)
+spectrum_clean = epochs_final.compute_psd(fmax=60, picks='eeg')
+psds_clean, freqs_clean = spectrum_clean.get_data(return_freqs=True)
+# میانگین گیری روی تمام کانال‌ها و تمام اپوک‌ها
+psd_clean_mean = 10 * np.log10(psds_clean.mean(axis=0).mean(axis=0))
+
+
+# رسم نمودار مقایسه‌ای PSD
+plt.figure(figsize=(10, 6))
+
+plt.plot(freqs_raw, psd_raw_mean, color='red', linestyle='--', label='Raw Data', linewidth=1.5)
+plt.plot(freqs_clean, psd_clean_mean, color='blue', label='Final Clean Data', linewidth=2)
+
+# اضافه کردن خطوط راهنما برای بررسی چشمی
+plt.axvline(x=50, color='gray', linestyle=':', label='50Hz (Line Noise)')
+plt.axvline(x=10, color='green', linestyle=':', label='10Hz (Alpha Peak)')
+
+plt.title('Frequency Domain Comparison (PSD)')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power Spectral Density (dB)')
+plt.legend()
+plt.grid(True)
+plt.xlim(0, 60)
+
+plt.show()
+
+print("Check point 2: Look at the PSD graph.")
+print("  - 50 Hz Check: Is the peak at 50Hz gone in the Blue line?")
+print("  - Alpha Check: Do you see a bump around 10Hz (Brain signal)?")
+print("  - Shape Check: Does the curve generally go down (1/f shape)?")
+
+print("\nStep 4 Complete.")
