@@ -10,7 +10,7 @@ os.makedirs(output_folder, exist_ok=True)
 print(f"Images will be saved in: {os.getcwd()}\\{output_folder}")
 
 # 2. پیدا کردن تمام فایل‌های داده
-all_files = glob.glob("C:/Users/Victus 16/PycharmProjects/signal&system/subjects/Subject_*.edf")
+all_files = glob.glob("C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/Subject_*.edf")
 all_files.sort()
 
 # تنظیمات فیلتر (ثابت برای همه)

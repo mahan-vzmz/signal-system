@@ -65,7 +65,7 @@ def process_single_subject(file_path):
 
 # لیست کردن تمام فایل‌هایی که با Subject شروع می‌شوند و پسوند edf دارند
 # اگر فایل‌ها در پوشه دیگری هستند، مسیر را اصلاح کنید. مثلا: "Data/Subject_*.edf"
-all_files = glob.glob("C:/Users/Victus 16/PycharmProjects/signal&system/subjects/Subject_*.edf")
+all_files = glob.glob("C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/Subject_*.edf")
 all_files.sort()  # مرتب‌سازی به ترتیب نام
 
 print(f"Found {len(all_files)} files. Starting Batch Processing...\n")

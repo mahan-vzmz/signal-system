@@ -5,7 +5,7 @@ from scipy import signal
 
 # 1. بارگذاری داده‌ها
 # توجه: فایل شما edf است، پس از read_raw_edf استفاده می‌کنیم
-raw = mne.io.read_raw_edf("C:/Users/Victus 16/PycharmProjects/signal&system/subjects/Subject_01.edf", preload=True)
+raw = mne.io.read_raw_edf("C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/Subject_01.edf", preload=True)
 
 mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
 raw.rename_channels(mapping)
