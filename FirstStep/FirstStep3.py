@@ -100,3 +100,99 @@ raw_processed.filter(l_freq=0.5, h_freq=45.0)
 print("Plotting PSD of FILTERED data...")
 raw_processed.compute_psd(fmax=80).plot()
 plt.show()
+
+# ==========================================
+# Ghasem Step 2: Epoching & Artifact Rejection
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 2: Epoching & AutoReject")
+print("=" * 30)
+
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+import pandas as pd  # برای نمایش تمیز آمار
+
+# ---------------------------------------------------------
+# 1. قطعه‌بندی سیگنال (Epoching)
+# طبق دستور: سیگنال پیوسته را به قطعات مساوی 2 ثانیه‌ای تقسیم کنید.
+# ---------------------------------------------------------
+epoch_duration = 2.0
+epochs = mne.make_fixed_length_epochs(raw_processed, duration=epoch_duration, preload=True)
+
+print(f"\nCreated {len(epochs)} epochs of {epoch_duration} seconds each.")
+
+# ---------------------------------------------------------
+# 2. شناسایی هوشمند داده‌های خراب (AutoReject)
+# طبق دستور: استفاده از الگوریتم برای تعیین بخش‌های خوب/بد/قابل ترمیم
+# ---------------------------------------------------------
+print("Running AutoReject (this may take a minute)...")
+
+# ایجاد شیء AutoReject
+# n_interpolate: تعداد کانال‌هایی که اجازه داریم در هر اپوک ترمیم کنیم (معمولا مقادیر مختلف تست می‌شود)
+# consensus: درصد کانال‌هایی که اگر خراب باشند، کل اپوک دور ریخته می‌شود
+ar = AutoReject(n_interpolate=[1, 2, 4], consensus=[0.5, 0.7], random_state=42, verbose=False)
+
+# فیت کردن روی داده‌ها و تمیز کردن آن‌ها
+epochs_clean, reject_log = ar.fit_transform(epochs, return_log=True)
+
+# رسم ماتریس وضعیت (Heatmap)
+# طبق دستور: سبز (سالم)، قرمز (بد/حذف)، آبی (ترمیم شده)
+print("Plotting AutoReject Heatmap...")
+reject_log.plot(orientation='horizontal')
+plt.suptitle("AutoReject Log (Heatmap)")
+plt.show()
+
+# ---------------------------------------------------------
+# 3. شناسایی و حذف کانال‌های معیوب (Global Bad Channels)
+# طبق دستور: قانون 70 درصد. اگر کانالی در بیش از 70 درصد اپوک‌ها بد بود -> کانال معیوب است.
+# ---------------------------------------------------------
+
+# ماتریس برچسب‌ها: (تعداد اپوک‌ها × تعداد کانال‌ها)
+# 0: خوب، 1: بد، 2: اینترپوله شده
+labels = reject_log.labels
+n_epochs, n_channels = labels.shape
+
+bad_channels_detected = []
+threshold_percentage = 0.70  # 70%
+
+print("\n--- Channel Statistics ---")
+for i, ch_name in enumerate(epochs.ch_names):
+    # محاسبه تعداد دفعاتی که این کانال در اپوک‌ها "بد" (1) یا "ترمیم" (2) تشخیص داده شده
+    # نکته: معمولا AutoReject خودش کانال‌های خیلی خراب را پیدا می‌کند، اما اینجا دستی چک می‌کنیم
+    # در reject_log، عدد 1 یعنی "بد" (Bad) و عدد 2 یعنی "ترمیم شده" (Interpolated)
+    # کانالی که کلاً خرابه، معمولاً در اکثر اپوک‌ها وضعیت 1 یا 2 می‌گیره.
+    bad_count = np.sum((labels[:, i] == 1) | (labels[:, i] == 2))
+    bad_ratio = bad_count / n_epochs
+
+    if bad_ratio > threshold_percentage:
+        print(f"Channel {ch_name}: {bad_ratio * 100:.1f}% bad epochs -> MARKED AS BAD")
+        bad_channels_detected.append(ch_name)
+
+# اضافه کردن کانال‌های بد شناسایی شده به لیست bads سیگنال
+epochs_clean.info['bads'].extend(bad_channels_detected)
+# حذف تکراری‌ها
+epochs_clean.info['bads'] = list(set(epochs_clean.info['bads']))
+
+print(f"\nFinal list of Bad Channels: {epochs_clean.info['bads']}")
+
+# ---------------------------------------------------------
+# 4. درون‌یابی کانال‌ها (Channel Interpolation)
+# طبق دستور: کانال‌های معیوب را با استفاده از همسایه‌ها بازسازی کنید.
+# ---------------------------------------------------------
+print("Interpolating bad channels...")
+# این متد تمام کانال‌هایی که در info['bads'] هستند را بازسازی می‌کند
+epochs_clean.interpolate_bads(reset_bads=True)
+
+# ---------------------------------------------------------
+# 5. مقایسه تصویری (Visual Comparison)
+# ---------------------------------------------------------
+
+# الف) رسم Topomap سنسورها (نشان دادن مکان سنسورها)
+print("Plotting Sensor Locations...")
+epochs_clean.plot_sensors(show_names=True, title="Sensor Locations")
+plt.show()
+
+# ب) رسم سیگنال نهایی (تمیز شده)
+# برای مشاهده اینکه آیا خطوط صاف (Flat) یا نویزی اصلاح شده‌اند
+print("Plotting Final Cleaned Epochs...")
+epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)

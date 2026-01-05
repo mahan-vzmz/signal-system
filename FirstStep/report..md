@@ -172,3 +172,161 @@ raw_processed.filter(l_freq=0.5, h_freq=45.0)
 print("Plotting PSD of FILTERED data...")
 raw_processed.compute_psd(fmax=80).plot()
 plt.show()
+```
+
+---
+<div dir="rtl">
+## ۶. گزارش فاز دوم: قطعه‌بندی، حذف آرتیفکت و ترمیم سیگنال
+
+در این فاز، پس از پیش‌پردازش اولیه (فیلترینگ)، هدف آماده‌سازی داده‌ها برای تحلیل‌های دقیق‌تر است. این مراحل شامل اصلاح موقعیت مکانی سنسورها، خرد کردن سیگنال به قطعات کوچک (Epoching)، شناسایی هوشمند نویز با الگوریتم AutoReject و ترمیم کانال‌های خراب است.
+
+### ۶-۱. روش کار و الگوریتم‌ها
+۱. **اصلاح مونتاژ:** استاندارد مکانی **10-20** روی داده‌ها اعمال شد.
+۲. **قطعه‌بندی (Epoching):** سیگنال پیوسته به قطعات مساوی **۲ ثانیه‌ای** تقسیم شد. این کار باعث تولید حدود ۱۸۳ اپوک برای هر آزمودنی گردید.
+۳. **الگوریتم AutoReject:** از این کتابخانه برای تمیزکاری خودکار استفاده شد. این الگوریتم با بررسی آماری، اپوک‌ها را به سه دسته تقسیم می‌کند:
+    * **خوب (Good):** داده سالم (رنگ سبز در نمودار).
+    * **بد (Bad):** داده غیرقابل استفاده که حذف می‌شود (رنگ قرمز).
+    * **ترمیم‌ شده (Interpolated):** داده‌ای که با استفاده از کانال‌های همسایه اصلاح شده است (رنگ آبی).
+
+### ۶-۲. نتایج پردازش ۱۰ آزمودنی
+در جدول زیر، خروجی ماتریس وضعیت (Heatmap) و وضعیت نهایی سنسورها پس از ترمیم (Topomap) برای تمام ۱۰ آزمودنی آورده شده است.
+
+| نام فایل | ماتریس وضعیت (Heatmap) | وضعیت سنسورها (Topomap) |
+| :---: | :---: | :---: |
+| **Subject 01** | ![Heat](./Report_Images_Step2/Subject_01_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_01_Sensors.png) |
+| **Subject 02** | ![Heat](./Report_Images_Step2/Subject_02_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_02_Sensors.png) |
+| **Subject 03** | ![Heat](./Report_Images_Step2/Subject_03_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_03_Sensors.png) |
+| **Subject 04** | ![Heat](./Report_Images_Step2/Subject_04_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_04_Sensors.png) |
+| **Subject 05** | ![Heat](./Report_Images_Step2/Subject_05_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_05_Sensors.png) |
+| **Subject 06** | ![Heat](./Report_Images_Step2/Subject_06_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_06_Sensors.png) |
+| **Subject 07** | ![Heat](./Report_Images_Step2/Subject_07_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_07_Sensors.png) |
+| **Subject 08** | ![Heat](./Report_Images_Step2/Subject_08_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_08_Sensors.png) |
+| **Subject 09** | ![Heat](./Report_Images_Step2/Subject_09_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_09_Sensors.png) |
+| **Subject 10** | ![Heat](./Report_Images_Step2/Subject_10_Heatmap.png) | ![Sens](./Report_Images_Step2/Subject_10_Sensors.png) |
+
+---
+
+## ۷. پاسخ به سوالات تئوری فاز دوم
+
+### سوال ۱: چرا سیگنال مغزی را به قطعات کوچک (مثلاً ۲ ثانیه) تقسیم می‌کنیم؟
+**پاسخ:**
+۱. **ایستایی (Stationarity):** سیگنال مغزی ماهیت غیر-ایستا دارد (خواص آماری آن در طول زمان تغییر می‌کند). اما در بازه‌های کوتاه (مثل ۲ ثانیه) می‌توان آن را «شبه-ایستا» فرض کرد که پیش‌نیاز بسیاری از تحلیل‌های فرکانسی است.
+۲. **مدیریت آرتیفکت:** اگر کل سیگنال یکپارچه باشد، یک حرکت ناگهانی بیمار می‌تواند میانگین کل داده را خراب کند. با قطعه‌بندی، می‌توانیم فقط آن قطعه‌ی ۲ ثانیه‌ای خراب را دور بریزیم و مابقی داده را حفظ کنیم.
+
+### سوال ۲: تفاوت سطر و ستون قرمز در ماتریس Heatmap چیست؟
+**پاسخ:**
+* **ستون قرمز (یا بخش عمده‌ای از یک ستون):** نشان‌دهنده **خرابی سنسور (Bad Channel)** است. یعنی یک الکترود خاص (مثلاً Fz) قطع شده یا تماس خوبی با پوست ندارد و در تمام طول آزمایش نویز ضبط کرده است.
+* **سطر قرمز:** نشان‌دهنده **آرتیفکت لحظه‌ای (Time Artifact)** است. یعنی در آن لحظه خاص (آن اپوک)، بیمار حرکتی مثل پلک زدن شدید یا فشردن دندان‌ها انجام داده که باعث شده تمام کانال‌ها به صورت همزمان نویز بگیرند.
+
+### سوال ۳: فرآیند درون‌یابی (Interpolation) چگونه کار می‌کند؟
+**پاسخ:**
+درون‌یابی روشی ریاضی برای بازسازی داده‌های از دست رفته است. وقتی یک کانال به عنوان "خراب" شناسایی می‌شود (مثلاً بیش از ۷۰٪ مواقع نویز دارد)، داده‌های آن حذف می‌شود.
+سپس الگوریتم (معمولاً روش *Spherical Spline*) به کانال‌های سالم اطراف نگاه می‌کند. هرچه یک کانال سالم به کانال خراب نزدیک‌تر باشد، وزن (تأثیر) بیشتری دارد. مقدار جدید کانال خراب، حاصل **میانگین وزنی** کانال‌های همسایه است.
+* **چرا کانال‌های ۱۰٪ خراب را ترمیم می‌کنیم اما ۷۰٪ را دور می‌ریزیم؟**
+اگر کانالی ۷۰٪ مواقع خراب باشد، یعنی داده‌ی واقعی مغزی در آن بسیار ناچیز است، پس بهتر است کلاً با تخمین جایگزین شود. اما اگر کانالی فقط ۱۰٪ خرابی دارد، یعنی ۹۰٪ اطلاعاتش ارزشمند است؛ پس حیف است حذف شود و فقط تکه‌های کوچک خراب را اصلاح می‌کنیم.
+
+---
+
+## ۸. پیوست: کد پایتون استفاده شده (Batch Processing)
+
+کد زیر برای پردازش خودکار ۱۰ فایل، تولید Heatmap و تشخیص کانال‌های معیوب استفاده شده است:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 2: Epoching & Artifact Rejection
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 2: Epoching & AutoReject")
+print("=" * 30)
+
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+import pandas as pd  # برای نمایش تمیز آمار
+
+# ---------------------------------------------------------
+# 1. قطعه‌بندی سیگنال (Epoching)
+# طبق دستور: سیگنال پیوسته را به قطعات مساوی 2 ثانیه‌ای تقسیم کنید.
+# ---------------------------------------------------------
+epoch_duration = 2.0
+epochs = mne.make_fixed_length_epochs(raw_processed, duration=epoch_duration, preload=True)
+
+print(f"\nCreated {len(epochs)} epochs of {epoch_duration} seconds each.")
+
+# ---------------------------------------------------------
+# 2. شناسایی هوشمند داده‌های خراب (AutoReject)
+# طبق دستور: استفاده از الگوریتم برای تعیین بخش‌های خوب/بد/قابل ترمیم
+# ---------------------------------------------------------
+print("Running AutoReject (this may take a minute)...")
+
+# ایجاد شیء AutoReject
+# n_interpolate: تعداد کانال‌هایی که اجازه داریم در هر اپوک ترمیم کنیم (معمولا مقادیر مختلف تست می‌شود)
+# consensus: درصد کانال‌هایی که اگر خراب باشند، کل اپوک دور ریخته می‌شود
+ar = AutoReject(n_interpolate=[1, 2, 4], consensus=[0.5, 0.7], random_state=42, verbose=False)
+
+# فیت کردن روی داده‌ها و تمیز کردن آن‌ها
+epochs_clean, reject_log = ar.fit_transform(epochs, return_log=True)
+
+# رسم ماتریس وضعیت (Heatmap)
+# طبق دستور: سبز (سالم)، قرمز (بد/حذف)، آبی (ترمیم شده)
+print("Plotting AutoReject Heatmap...")
+reject_log.plot(orientation='horizontal')
+plt.suptitle("AutoReject Log (Heatmap)")
+plt.show()
+
+# ---------------------------------------------------------
+# 3. شناسایی و حذف کانال‌های معیوب (Global Bad Channels)
+# طبق دستور: قانون 70 درصد. اگر کانالی در بیش از 70 درصد اپوک‌ها بد بود -> کانال معیوب است.
+# ---------------------------------------------------------
+
+# ماتریس برچسب‌ها: (تعداد اپوک‌ها × تعداد کانال‌ها)
+# 0: خوب، 1: بد، 2: اینترپوله شده
+labels = reject_log.labels
+n_epochs, n_channels = labels.shape
+
+bad_channels_detected = []
+threshold_percentage = 0.70  # 70%
+
+print("\n--- Channel Statistics ---")
+for i, ch_name in enumerate(epochs.ch_names):
+    # محاسبه تعداد دفعاتی که این کانال در اپوک‌ها "بد" (1) یا "ترمیم" (2) تشخیص داده شده
+    # نکته: معمولا AutoReject خودش کانال‌های خیلی خراب را پیدا می‌کند، اما اینجا دستی چک می‌کنیم
+    # در reject_log، عدد 1 یعنی "بد" (Bad) و عدد 2 یعنی "ترمیم شده" (Interpolated)
+    # کانالی که کلاً خرابه، معمولاً در اکثر اپوک‌ها وضعیت 1 یا 2 می‌گیره.
+    bad_count = np.sum((labels[:, i] == 1) | (labels[:, i] == 2))
+    bad_ratio = bad_count / n_epochs
+
+    if bad_ratio > threshold_percentage:
+        print(f"Channel {ch_name}: {bad_ratio * 100:.1f}% bad epochs -> MARKED AS BAD")
+        bad_channels_detected.append(ch_name)
+
+# اضافه کردن کانال‌های بد شناسایی شده به لیست bads سیگنال
+epochs_clean.info['bads'].extend(bad_channels_detected)
+# حذف تکراری‌ها
+epochs_clean.info['bads'] = list(set(epochs_clean.info['bads']))
+
+print(f"\nFinal list of Bad Channels: {epochs_clean.info['bads']}")
+
+# ---------------------------------------------------------
+# 4. درون‌یابی کانال‌ها (Channel Interpolation)
+# طبق دستور: کانال‌های معیوب را با استفاده از همسایه‌ها بازسازی کنید.
+# ---------------------------------------------------------
+print("Interpolating bad channels...")
+# این متد تمام کانال‌هایی که در info['bads'] هستند را بازسازی می‌کند
+epochs_clean.interpolate_bads(reset_bads=True)
+
+# ---------------------------------------------------------
+# 5. مقایسه تصویری (Visual Comparison)
+# ---------------------------------------------------------
+
+# الف) رسم Topomap سنسورها (نشان دادن مکان سنسورها)
+print("Plotting Sensor Locations...")
+epochs_clean.plot_sensors(show_names=True, title="Sensor Locations")
+plt.show()
+
+# ب) رسم سیگنال نهایی (تمیز شده)
+# برای مشاهده اینکه آیا خطوط صاف (Flat) یا نویزی اصلاح شده‌اند
+print("Plotting Final Cleaned Epochs...")
+epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)
+```
+

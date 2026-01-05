@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="">
+    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="start second_step">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/FirstStep/FirstStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep2.py" beforeDir="false" afterPath="$PROJECT_DIR$/FirstStep/FirstStep2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep3.py" beforeDir="false" afterPath="$PROJECT_DIR$/FirstStep/FirstStep3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FirstStep/report..md" beforeDir="false" afterPath="$PROJECT_DIR$/FirstStep/report..md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SecondStep/SecondStep.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -25,6 +25,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "mahan-vzmz"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/mahan-vzmz/signal-system.git",
+    "accountId": "9ea1c42d-36fd-4812-9cff-d1b12041f088"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -77,8 +89,17 @@
       <updated>1767343983859</updated>
       <workItem from="1767343984875" duration="5896000" />
       <workItem from="1767623083966" duration="7519000" />
-      <workItem from="1767635797664" duration="1040000" />
+      <workItem from="1767635797664" duration="2893000" />
     </task>
+    <task id="LOCAL-00001" summary="start second_step">
+      <option name="closed" value="true" />
+      <created>1767636948413</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1767636948413</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -95,10 +116,14 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="start second_step" />
+    <option name="LAST_COMMIT_MESSAGE" value="start second_step" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SignalSystem$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767636010505" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
+    <SUITE FILE_PATH="coverage/SignalSystem$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767637451942" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
     <SUITE FILE_PATH="coverage/signal_system$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767631315016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
-    <SUITE FILE_PATH="coverage/SignalSystem$SecondStep.coverage" NAME="SecondStep Coverage Results" MODIFIED="1767636714323" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/SecondStep" />
+    <SUITE FILE_PATH="coverage/SignalSystem$SecondStep.coverage" NAME="SecondStep Coverage Results" MODIFIED="1767637740436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
     <SUITE FILE_PATH="coverage/signal_system$FirstStep2.coverage" NAME="FirstStep2 Coverage Results" MODIFIED="1767628100666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/signal_system$FirstStep.coverage" NAME="FirstStep Coverage Results" MODIFIED="1767628898737" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
   </component>
