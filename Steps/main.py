@@ -530,3 +530,223 @@ print("1. Alpha Band: Look at the back of the head. Red means high relaxation.")
 print("2. Theta Band: Red spots might indicate drowsiness.")
 print("3. Beta Band: Usually lower power compared to Alpha.")
 print("-" * 30)
+
+
+# ==========================================
+# Ghasem Step 7: Connectivity Analysis (Manual Implementation)
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 7: Connectivity Analysis & Visualization")
+print("=" * 30)
+
+from mne_connectivity.viz import plot_connectivity_circle
+from scipy.signal import hilbert
+
+# 1. تعریف باندهای فرکانسی
+bands = {
+    "Theta": (4, 8),
+    "Alpha": (8, 12),
+    "Beta": (12, 30)
+}
+
+# لیست نام کانال‌ها برای رسم نمودار
+node_names = epochs_final.ch_names
+
+# توضیح مفهومی (طبق خواسته سوال):
+print("Why analyze connectivity on short epochs?")
+print("  > Because EEG signals are non-stationary (change over time).")
+print("  > Short epochs (e.g., 2s) can be considered 'quasi-stationary', making spectral analysis valid.\n")
+
+# حلقه روی هر باند فرکانسی
+for band_name, (l_freq, h_freq) in bands.items():
+    print(f"--- Processing {band_name} Band ({l_freq}-{h_freq} Hz) ---")
+
+    # الف) فیلتر کردن سیگنال در باند مورد نظر
+    # نکته: از کپی استفاده می‌کنیم تا داده اصلی دستخوش تغییر نشود
+    epochs_band = epochs_final.copy().filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
+
+    # دریافت داده‌ها: (تعداد اپوک، تعداد کانال، تعداد نقاط زمانی)
+    data = epochs_band.get_data()
+    n_epochs, n_channels, n_times = data.shape
+
+    # ب) استخراج پوش سیگنال (Envelope Extraction)
+    # طبق دستور: استفاده از تبدیل هیلبرت
+    # تابع hilbert به صورت پیش‌فرض روی آخرین بعد (زمان) اعمال می‌شود که درست است
+    analytic_signal = hilbert(data)
+    envelope = np.abs(analytic_signal)  # قدر مطلق سیگنال تحلیلی = پوش سیگنال
+
+    # ج) محاسبه همبستگی آماری بین کانال‌ها (Correlation Calculation)
+    # برای محاسبه دقیق، پوش‌ها را در تمام اپوک‌ها به هم می‌چسبانیم (Concatenate)
+    # تا یک سری زمانی طولانی از پوش‌ها داشته باشیم
+    # تبدیل ابعاد به: (تعداد کانال، کل نقاط زمانی)
+    envelope_concat = envelope.transpose(1, 0, 2).reshape(n_channels, -1)
+
+    # محاسبه ماتریس همبستگی (Pearson Correlation)
+    # خروجی یک ماتریس n_channels * n_channels خواهد بود
+    con_matrix = np.corrcoef(envelope_concat)
+
+    # د) آستانه‌گذاری (Thresholding)
+    # طبق دستور: حذف ارتباطات ضعیف برای جلوگیری از شلوغی
+    # مقادیر قطر اصلی را هم صفر می‌کنیم (ارتباط خود با خود اهمیتی ندارد)
+    np.fill_diagonal(con_matrix, 0)
+
+    # تعیین آستانه (مثلاً 0.7 یا 70 درصد قوی‌ترین‌ها)
+    # اینجا از آستانه مطلق استفاده می‌کنیم، هر همبستگی زیر 0.75 حذف شود
+    threshold = 0.4
+    con_matrix_thresh = con_matrix.copy()
+    con_matrix_thresh[np.abs(con_matrix_thresh) < threshold] = 0
+
+    # بررسی اینکه آیا اصلا اتصالی باقی مانده؟
+    if np.all(con_matrix_thresh == 0):
+        print(f"Warning: No connections found above threshold {threshold} for {band_name}.")
+    else:
+        print(f"Plotting Circle Plot for {band_name}...")
+
+        # هـ) نمایش شبکه اتصال‌پذیری (Circle Plot)
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        plot_connectivity_circle(
+            con_matrix_thresh,
+            node_names,
+            n_lines=300,                     # حداکثر تعداد خطوط قابل نمایش
+            node_angles=None,                # محاسبه خودکار زوایا
+            node_colors=None,                # رنگ‌بندی پیش‌فرض
+            title=f'{band_name} Band Connectivity (Corr > {threshold})',
+            fontsize_names=12,
+            linewidth=1.5,
+            show=False # نمایش را دستی انجام می‌دهیم
+        )
+        plt.show()
+
+print("\nStep 7 Complete.")
+print("-" * 30)
+print("INTERPRETATION GUIDE (تفسیر نتایج):")
+print("1. Lines: Each line represents a strong functional connection between two brain regions.")
+print("2. Clustering: If many lines connect to one point (e.g., 'Fz' or 'Oz'), that region is a 'Hub'.")
+print("3. Comparison: Compare Alpha vs Beta.")
+print("   - Alpha often shows strong posterior (back of head) connectivity during rest.")
+print("   - Beta might show more frontal/central connections related to alertness.")
+print("-" * 30)
+
+
+# ==========================================
+# Ghasem Step 8: Automated Diagnosis System
+# (Alpha/Beta & Theta/Beta Ratios)
+# ==========================================
+print("\n" + "=" * 40)
+print("STARTING STEP 8: Final Automated Diagnosis")
+print("=" * 40)
+
+import numpy as np
+import matplotlib.pyplot as plt
+import mne
+
+# ---------------------------------------------------------
+# 1. محاسبه چگالی طیفی توان (PSD) برای کل باندها
+# ---------------------------------------------------------
+print("Calculating Band Powers...")
+
+# محاسبه PSD روی داده‌های تمیز (epochs_final)
+# fmin=3 و fmax=35 را انتخاب می‌کنیم تا تمام باندهای تتا، آلفا و بتا را پوشش دهد
+spectrum = epochs_final.compute_psd(method='welch', fmin=3, fmax=35, n_fft=int(sfreq * 2))
+psds, freqs = spectrum.get_data(return_freqs=True)
+
+# میانگین‌گیری روی اپوک‌ها (چون می‌خواهیم وضعیت کلی فرد را در کل آزمایش بسنجیم)
+# ابعاد تبدیل می‌شود به: (تعداد کانال‌ها، تعداد فرکانس‌ها)
+psds_mean = psds.mean(axis=0)
+
+# ---------------------------------------------------------
+# 2. تفکیک باندها و محاسبه انرژی هر باند
+# ---------------------------------------------------------
+# تابع کمکی برای میانگین‌گیری توان در یک بازه فرکانسی خاص
+def get_band_power(psds, freqs, fmin, fmax):
+    # پیدا کردن اندیس‌های فرکانسی مورد نظر
+    idx = np.logical_and(freqs >= fmin, freqs <= fmax)
+    # میانگین‌گیری از مقادیر توان در آن بازه برای هر کانال
+    return psds_mean[:, idx].mean(axis=1)
+
+# محاسبه انرژی برای سه باند حیاتی
+theta_power = get_band_power(psds_mean, freqs, 4, 8)   # Theta (4-8 Hz)
+alpha_power = get_band_power(psds_mean, freqs, 8, 12)  # Alpha (8-12 Hz)
+beta_power  = get_band_power(psds_mean, freqs, 12, 30) # Beta (12-30 Hz)
+
+# ---------------------------------------------------------
+# 3. محاسبه نسبت‌های طلایی (Indices)
+# ---------------------------------------------------------
+# الف) شاخص خواب‌آلودگی (Alpha / Beta)
+drowsiness_index = alpha_power / beta_power
+
+# ب) شاخص عدم تمرکز (Theta / Beta)
+inattention_index = theta_power / beta_power
+
+print("Indices calculated successfully.")
+
+# ---------------------------------------------------------
+# 4. مصورسازی (Topomaps) - طبق تصویر درخواستی
+# ---------------------------------------------------------
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+fig.suptitle('Automated Diagnostic Maps', fontsize=16, fontweight='bold')
+
+# رسم نقشه خواب‌آلودگی
+im1, _ = mne.viz.plot_topomap(
+    drowsiness_index,
+    epochs_final.info,
+    axes=axes[0],
+    show=False,
+    cmap='RdBu_r', # قرمز یعنی مقدار زیاد (خواب‌آلود)، آبی یعنی کم
+    names=epochs_final.ch_names,
+    show_names=True,
+    contours=6
+)
+axes[0].set_title('Drowsiness Index (Alpha/Beta)\nRed = Drowsy/Relaxed', fontsize=12)
+plt.colorbar(im1, ax=axes[0], fraction=0.046, pad=0.04)
+
+# رسم نقشه عدم تمرکز
+im2, _ = mne.viz.plot_topomap(
+    inattention_index,
+    epochs_final.info,
+    axes=axes[1],
+    show=False,
+    cmap='Wistia', # تم رنگی زرد/نارنجی مشابه تصویر نمونه شما
+    names=epochs_final.ch_names,
+    show_names=True,
+    contours=6
+)
+axes[1].set_title('Inattention Index (Theta/Beta)\nDarker = Mind Wandering', fontsize=12)
+plt.colorbar(im2, ax=axes[1], fraction=0.046, pad=0.04)
+
+plt.tight_layout()
+plt.show()
+
+# ---------------------------------------------------------
+# 5. سیستم تفسیر خودکار (Expert System Logic)
+# ---------------------------------------------------------
+# میانگین کل سر را حساب می‌کنیم تا یک نظر کلی بدهیم
+avg_ab_ratio = np.mean(drowsiness_index)
+avg_tb_ratio = np.mean(inattention_index)
+
+print("\n" + "*" * 50)
+print("FINAL DIAGNOSIS REPORT")
+print("*" * 50)
+
+# --- تفسیر شاخص خواب‌آلودگی (Alpha/Beta) ---
+print(f"\n1. Drowsiness Index (Alpha/Beta): {avg_ab_ratio:.2f}")
+if avg_ab_ratio > 1.5:
+    print("   >> RESULT: Drowsy / Deeply Relaxed")
+    print("   >> Explanation: Alpha waves constitute the dominant rhythm. Low alertness.")
+elif avg_ab_ratio < 0.8:
+    print("   >> RESULT: Highly Alert / Anxious")
+    print("   >> Explanation: Beta waves are dominant. High mental activity or stress.")
+else:
+    print("   >> RESULT: Normal State")
+    print("   >> Explanation: Balanced mental activity.")
+
+# --- تفسیر شاخص عدم تمرکز (Theta/Beta) ---
+print(f"\n2. Inattention Index (Theta/Beta): {avg_tb_ratio:.2f}")
+if avg_tb_ratio > 2.0:
+    print("   >> RESULT: Attention Deficit / Mind Wandering")
+    print("   >> Explanation: High Theta indicates lack of focus or daydreaming.")
+else:
+    print("   >> RESULT: Good Focus / Normal Attention")
+    print("   >> Explanation: Suitable balance between cognitive activity and rest.")
+
+print("\n" + "*" * 50)

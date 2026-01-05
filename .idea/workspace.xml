@@ -4,101 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="complete third_step and fourth_step">
+    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="complete fifth_step and sixth_step">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FirstStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep2.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FirstStep2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FirstStep3.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/FourthStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FourthStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Bode_Plot.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Bode_Plot.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_01_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_01_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_01_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_01_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_02_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_02_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_02_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_02_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_03_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_03_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_03_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_03_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_04_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_04_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_04_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_04_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_05_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_05_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_05_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_05_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_06_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_06_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_06_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_06_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_07_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_07_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_07_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_07_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_08_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_08_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_08_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_08_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_09_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_09_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_09_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_09_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_10_PSD_Filtered.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_10_PSD_Filtered.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images/Subject_10_PSD_Raw.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images/Subject_10_PSD_Raw.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Bad_Channels_Summary.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Bad_Channels_Summary.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_01_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_01_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_01_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_01_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_02_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_02_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_02_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_02_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_03_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_03_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_03_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_03_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_04_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_04_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_04_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_04_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_05_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_05_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_05_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_05_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_06_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_06_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_06_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_06_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_07_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_07_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_07_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_07_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_08_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_08_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_08_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_08_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_09_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_09_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_09_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_09_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_10_Heatmap.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_10_Heatmap.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step2/Subject_10_Sensors.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step2/Subject_10_Sensors.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_01_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_01_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_01_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_01_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_02_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_02_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_02_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_02_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_03_ICA_Scores.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_03_ICA_Scores.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_03_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_03_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_03_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_03_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_04_ICA_Scores.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_04_ICA_Scores.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_04_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_04_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_04_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_04_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_05_ICA_Scores.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_05_ICA_Scores.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_05_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_05_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_05_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_05_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_06_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_06_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_06_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_06_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_07_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_07_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_07_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_07_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_08_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_08_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_08_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_08_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_09_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_09_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_09_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_09_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_10_ICA_Topomaps.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_10_ICA_Topomaps.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_Auto/Subject_10_Signal_Comparison.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_Auto/Subject_10_Signal_Comparison.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_01_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_01_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_02_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_02_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_03_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_03_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_04_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_04_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_05_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_05_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_06_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_06_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_07_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_07_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_08_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_08_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_09_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_09_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Subject_10_ICA_Components.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_10_ICA_Components.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step3_ICA/Suggested_Bads.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Suggested_Bads.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_01.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_01.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_02.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_02.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_03.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_03.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_04.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_04.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_05.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_05.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_06.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_06.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_07.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_07.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_08.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_08.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_09.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_09.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/Report_Images_Step4_Final/Report_Step4_Subject_10.png" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/Report_Images_Step4_Final/Report_Step4_Subject_10.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/SecondStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/SecondStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/ThirdStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/ThirdStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/FirstStep/report..md" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/report..md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Steps/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Steps/report..md" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/report..md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -127,6 +36,9 @@
     "accountId": "9ea1c42d-36fd-4812-9cff-d1b12041f088"
   }
 }]]></component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -138,12 +50,14 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.EighthStep.executor": "Run",
     "Python.FifthStep.executor": "Run",
     "Python.FirstStep.executor": "Run",
     "Python.FirstStep2.executor": "Run",
     "Python.FirstStep3.executor": "Run",
     "Python.FourthStep.executor": "Run",
     "Python.SecondStep.executor": "Run",
+    "Python.SeventhStep.executor": "Run",
     "Python.SixthStep.executor": "Run",
     "Python.ThirdStep.executor": "Run",
     "Python.main.executor": "Run",
@@ -184,7 +98,7 @@
       <updated>1767343983859</updated>
       <workItem from="1767343984875" duration="5896000" />
       <workItem from="1767623083966" duration="7519000" />
-      <workItem from="1767635797664" duration="11467000" />
+      <workItem from="1767635797664" duration="15638000" />
     </task>
     <task id="LOCAL-00001" summary="start second_step">
       <option name="closed" value="true" />
@@ -218,7 +132,15 @@
       <option name="project" value="LOCAL" />
       <updated>1767645785386</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="complete fifth_step and sixth_step">
+      <option name="closed" value="true" />
+      <created>1767649424782</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1767649424783</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -239,7 +161,8 @@
     <MESSAGE value="start second_step" />
     <MESSAGE value="complete second_step" />
     <MESSAGE value="complete third_step and fourth_step" />
-    <option name="LAST_COMMIT_MESSAGE" value="complete third_step and fourth_step" />
+    <MESSAGE value="complete fifth_step and sixth_step" />
+    <option name="LAST_COMMIT_MESSAGE" value="complete fifth_step and sixth_step" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -252,15 +175,17 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/SignalSystem$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767643446978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
     <SUITE FILE_PATH="coverage/signal_system$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767631315016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
     <SUITE FILE_PATH="coverage/SignalSystem$SecondStep.coverage" NAME="SecondStep Coverage Results" MODIFIED="1767637740436" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
-    <SUITE FILE_PATH="coverage/SignalSystem$ThirdStep.coverage" NAME="ThirdStep Coverage Results" MODIFIED="1767644863432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
-    <SUITE FILE_PATH="coverage/SignalSystem$main.coverage" NAME="main Coverage Results" MODIFIED="1767648628896" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
-    <SUITE FILE_PATH="coverage/SignalSystem$FourthStep.coverage" NAME="FourthStep Coverage Results" MODIFIED="1767644064272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
-    <SUITE FILE_PATH="coverage/signal_system$FirstStep2.coverage" NAME="FirstStep2 Coverage Results" MODIFIED="1767628100666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SignalSystem$main.coverage" NAME="main Coverage Results" MODIFIED="1767656238475" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
     <SUITE FILE_PATH="coverage/SignalSystem$SixthStep.coverage" NAME="SixthStep Coverage Results" MODIFIED="1767648855504" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
     <SUITE FILE_PATH="coverage/signal_system$FirstStep.coverage" NAME="FirstStep Coverage Results" MODIFIED="1767628898737" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
+    <SUITE FILE_PATH="coverage/SignalSystem$EighthStep.coverage" NAME="EighthStep Coverage Results" MODIFIED="1767656674498" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
+    <SUITE FILE_PATH="coverage/SignalSystem$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767643446978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
+    <SUITE FILE_PATH="coverage/SignalSystem$ThirdStep.coverage" NAME="ThirdStep Coverage Results" MODIFIED="1767644863432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
+    <SUITE FILE_PATH="coverage/SignalSystem$FourthStep.coverage" NAME="FourthStep Coverage Results" MODIFIED="1767644064272" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
+    <SUITE FILE_PATH="coverage/signal_system$FirstStep2.coverage" NAME="FirstStep2 Coverage Results" MODIFIED="1767628100666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SignalSystem$SeventhStep.coverage" NAME="SeventhStep Coverage Results" MODIFIED="1767655713171" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
     <SUITE FILE_PATH="coverage/SignalSystem$FifthStep.coverage" NAME="FifthStep Coverage Results" MODIFIED="1767646574501" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Steps" />
   </component>
 </project>

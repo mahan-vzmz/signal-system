@@ -233,101 +233,65 @@ plt.show()
 </div>
 
 ```python
-# ==========================================
-# Ghasem Step 2: Epoching & Artifact Rejection
-# ==========================================
-print("\n" + "=" * 30)
-print("STARTING STEP 2: Epoching & AutoReject")
-print("=" * 30)
-
+import mne
+import numpy as np
 import matplotlib.pyplot as plt
 from autoreject import AutoReject
-import pandas as pd  # برای نمایش تمیز آمار
+import glob
+import os
 
-# ---------------------------------------------------------
-# 1. قطعه‌بندی سیگنال (Epoching)
-# طبق دستور: سیگنال پیوسته را به قطعات مساوی 2 ثانیه‌ای تقسیم کنید.
-# ---------------------------------------------------------
-epoch_duration = 2.0
-epochs = mne.make_fixed_length_epochs(raw_processed, duration=epoch_duration, preload=True)
+# تنظیم مسیرها
+input_folder = "subjects/"
+output_folder = "Report_Images_Step2"
+os.makedirs(output_folder, exist_ok=True)
+all_files = glob.glob(os.path.join(input_folder, "Subject_*.edf"))
+all_files.sort()
 
-print(f"\nCreated {len(epochs)} epochs of {epoch_duration} seconds each.")
+print(f"Processing {len(all_files)} files...")
 
-# ---------------------------------------------------------
-# 2. شناسایی هوشمند داده‌های خراب (AutoReject)
-# طبق دستور: استفاده از الگوریتم برای تعیین بخش‌های خوب/بد/قابل ترمیم
-# ---------------------------------------------------------
-print("Running AutoReject (this may take a minute)...")
+for file_path in all_files:
+    subject_name = os.path.splitext(os.path.basename(file_path))[0]
+    
+    try:
+        # 1. بارگذاری و پیش‌پردازش
+        raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
+        mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
+        raw.rename_channels(mapping)
+        
+        if 'Trig' in raw.ch_names: raw.set_channel_types({'Trig': 'stim'})
+        try: raw.set_montage('standard_1020', match_case=False)
+        except: pass
+        
+        raw.pick_types(eeg=True, eog=False, stim=False, exclude='bads')
+        raw.notch_filter(50.0, verbose=False)
+        raw.filter(0.5, 45.0, verbose=False)
 
-# ایجاد شیء AutoReject
-# n_interpolate: تعداد کانال‌هایی که اجازه داریم در هر اپوک ترمیم کنیم (معمولا مقادیر مختلف تست می‌شود)
-# consensus: درصد کانال‌هایی که اگر خراب باشند، کل اپوک دور ریخته می‌شود
-ar = AutoReject(n_interpolate=[1, 2, 4], consensus=[0.5, 0.7], random_state=42, verbose=False)
+        # 2. قطعه‌بندی (Epoching)
+        epochs = mne.make_fixed_length_epochs(raw, duration=2.0, preload=True, verbose=False)
 
-# فیت کردن روی داده‌ها و تمیز کردن آن‌ها
-epochs_clean, reject_log = ar.fit_transform(epochs, return_log=True)
+        # 3. شناسایی آرتیفکت (AutoReject)
+        ar = AutoReject(n_interpolate=[1, 2, 4], consensus=[0.5, 0.7], random_state=42, verbose=False)
+        epochs_clean, reject_log = ar.fit_transform(epochs, return_log=True)
 
-# رسم ماتریس وضعیت (Heatmap)
-# طبق دستور: سبز (سالم)، قرمز (بد/حذف)، آبی (ترمیم شده)
-print("Plotting AutoReject Heatmap...")
-reject_log.plot(orientation='horizontal')
-plt.suptitle("AutoReject Log (Heatmap)")
-plt.show()
+        # 4. ذخیره خروجی‌ها
+        # ذخیره Heatmap
+        fig_heat = reject_log.plot(orientation='horizontal', show=False)
+        plt.suptitle(f"Heatmap - {subject_name}")
+        plt.savefig(os.path.join(output_folder, f"{subject_name}_Heatmap.png"))
+        plt.close(fig_heat)
 
-# ---------------------------------------------------------
-# 3. شناسایی و حذف کانال‌های معیوب (Global Bad Channels)
-# طبق دستور: قانون 70 درصد. اگر کانالی در بیش از 70 درصد اپوک‌ها بد بود -> کانال معیوب است.
-# ---------------------------------------------------------
+        # ذخیره سنسورها
+        epochs_clean.interpolate_bads(reset_bads=True)
+        fig_sensor = epochs_clean.plot_sensors(show_names=True, show=False)
+        plt.savefig(os.path.join(output_folder, f"{subject_name}_Sensors.png"))
+        plt.close(fig_sensor)
+        
+        print(f"Done: {subject_name}")
 
-# ماتریس برچسب‌ها: (تعداد اپوک‌ها × تعداد کانال‌ها)
-# 0: خوب، 1: بد، 2: اینترپوله شده
-labels = reject_log.labels
-n_epochs, n_channels = labels.shape
+    except Exception as e:
+        print(f"Error in {subject_name}: {e}")
 
-bad_channels_detected = []
-threshold_percentage = 0.70  # 70%
-
-print("\n--- Channel Statistics ---")
-for i, ch_name in enumerate(epochs.ch_names):
-    # محاسبه تعداد دفعاتی که این کانال در اپوک‌ها "بد" (1) یا "ترمیم" (2) تشخیص داده شده
-    # نکته: معمولا AutoReject خودش کانال‌های خیلی خراب را پیدا می‌کند، اما اینجا دستی چک می‌کنیم
-    # در reject_log، عدد 1 یعنی "بد" (Bad) و عدد 2 یعنی "ترمیم شده" (Interpolated)
-    # کانالی که کلاً خرابه، معمولاً در اکثر اپوک‌ها وضعیت 1 یا 2 می‌گیره.
-    bad_count = np.sum((labels[:, i] == 1) | (labels[:, i] == 2))
-    bad_ratio = bad_count / n_epochs
-
-    if bad_ratio > threshold_percentage:
-        print(f"Channel {ch_name}: {bad_ratio * 100:.1f}% bad epochs -> MARKED AS BAD")
-        bad_channels_detected.append(ch_name)
-
-# اضافه کردن کانال‌های بد شناسایی شده به لیست bads سیگنال
-epochs_clean.info['bads'].extend(bad_channels_detected)
-# حذف تکراری‌ها
-epochs_clean.info['bads'] = list(set(epochs_clean.info['bads']))
-
-print(f"\nFinal list of Bad Channels: {epochs_clean.info['bads']}")
-
-# ---------------------------------------------------------
-# 4. درون‌یابی کانال‌ها (Channel Interpolation)
-# طبق دستور: کانال‌های معیوب را با استفاده از همسایه‌ها بازسازی کنید.
-# ---------------------------------------------------------
-print("Interpolating bad channels...")
-# این متد تمام کانال‌هایی که در info['bads'] هستند را بازسازی می‌کند
-epochs_clean.interpolate_bads(reset_bads=True)
-
-# ---------------------------------------------------------
-# 5. مقایسه تصویری (Visual Comparison)
-# ---------------------------------------------------------
-
-# الف) رسم Topomap سنسورها (نشان دادن مکان سنسورها)
-print("Plotting Sensor Locations...")
-epochs_clean.plot_sensors(show_names=True, title="Sensor Locations")
-plt.show()
-
-# ب) رسم سیگنال نهایی (تمیز شده)
-# برای مشاهده اینکه آیا خطوط صاف (Flat) یا نویزی اصلاح شده‌اند
-print("Plotting Final Cleaned Epochs...")
-epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EEG Signal", block=True)
+print("All Processing Completed.")
 ```
 
 <div dir="rtl">
@@ -383,78 +347,26 @@ epochs_clean.plot(n_epochs=3, n_channels=len(epochs.ch_names), title="Cleaned EE
 </div>
 
 ```python
-# ==========================================
-# Ghasem Step 3 (AUTOMATED): Artifact Removal using ICA
-# ==========================================
-print("\n" + "=" * 30)
-print("STARTING STEP 3: Automated ICA (EOG Removal)")
-print("=" * 30)
-
+# بخشی از کد پردازش اتوماتیک (Auto-ICA)
+import mne
 from mne.preprocessing import ICA
 
-# 1. تنظیم و آموزش ICA
-ica = ICA(n_components=15, max_iter='auto', random_state=97)
+# ... (بعد از مرحله AutoReject) ...
 
-print("Fitting ICA to cleaned epochs...")
+# 1. آموزش ICA
+ica = ICA(n_components=15, max_iter='auto', random_state=97)
 ica.fit(epochs_clean)
 
-# 2. شناسایی اتوماتیک مولفه‌های چشم (EOG)
-# استراتژی: استفاده از کانال Fp1 یا Fp2 به عنوان مرجع چشم
-target_eog_channel = None
-# لیست اولویت برای پیدا کردن کانال چشم
-for ch in ['Fp1', 'Fp2', 'Fz', 'Fp1-LE', 'Fp2-LE']:
-    if ch in epochs_clean.ch_names:
-        target_eog_channel = ch
-        break
-
-if target_eog_channel:
-    print(f"Using channel '{target_eog_channel}' as EOG reference for auto-detection.")
-
-    # تابع find_bads_eog به صورت خودکار مولفه‌های شبیه پلک را پیدا می‌کند
-    # threshold=3.0 معمولا استاندارد است (هر چه کمتر باشد، سخت‌گیرتر است)
-    eog_inds, scores = ica.find_bads_eog(epochs_clean, ch_name=target_eog_channel, threshold=3.0)
-
-    print(f"Auto-detected EOG components (Blinks): {eog_inds}")
-
-    # اعمال لیست حذفی
+# 2. تشخیص اتوماتیک پلک (بدون دخالت دست)
+# استفاده از کانال Fp1 به عنوان جایگزین EOG
+if 'Fp1' in epochs_clean.ch_names:
+    eog_inds, scores = ica.find_bads_eog(epochs_clean, ch_name='Fp1', threshold=3.0)
     ica.exclude = eog_inds
+    print(f"Auto-detected artifacts: {eog_inds}")
 
-    # رسم نمودار امتیازها (اختیاری - برای دیدن دقت الگوریتم)
-    ica.plot_scores(scores, exclude=eog_inds, title=f"Component correlation with {target_eog_channel}")
-    plt.show()
-else:
-    print("Warning: No frontal channel (Fp1/Fp2) found! Cannot auto-detect blinks.")
-
-# 3. نمایش مولفه‌ها (برای تایید چشمی شما)
-# دور مولفه‌هایی که سیستم حذف کرده، خط قرمز کشیده می‌شود
-print("Plotting components (Red title = Marked for removal)...")
-ica.plot_components()
-plt.show()
-
-# 4. اعمال ICA و بازسازی سیگنال
-print("Applying ICA to remove artifacts...")
-epochs_final = epochs_clean.copy()
-ica.apply(epochs_final)
-
-# 5. مقایسه قبل و بعد (Visual Comparison)
-if target_eog_channel:
-    print(f"Plotting comparison on channel {target_eog_channel}...")
-
-    # گرفتن داده اولین اپوک برای مقایسه
-    original_data = epochs_clean.get_data(picks=target_eog_channel)[0, 0, :]
-    cleaned_data = epochs_final.get_data(picks=target_eog_channel)[0, 0, :]
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(original_data, label='Original (with Artifacts)', color='red', alpha=0.5)
-    plt.plot(cleaned_data, label='Cleaned (ICA Applied)', color='blue', linewidth=1.5)
-    plt.title(f'Effect of ICA on Channel {target_eog_channel}')
-    plt.xlabel('Time points')
-    plt.ylabel('Amplitude')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-print("Step 3 Complete. 'epochs_final' is your clean data.")
+# 3. اعمال تغییرات و ذخیره نتایج
+ica.apply(epochs_clean)
+# ... ذخیره نمودارها ...
 ```
 
 <div dir="rtl">
@@ -497,117 +409,114 @@ print("Step 3 Complete. 'epochs_final' is your clean data.")
 </div>
 
 ```python
-# ==========================================
-# Ghasem Step 4: Final Inspection (Time & Frequency)
-# ==========================================
-print("\n" + "=" * 30)
-print("STARTING STEP 4: Time & Frequency Inspection")
-print("=" * 30)
-
-import matplotlib.pyplot as plt
+import mne
 import numpy as np
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+from mne.preprocessing import ICA
+import glob
+import os
 
-# تنظیمات نمودار برای زیبایی
-plt.rcParams.update({'font.size': 10})
+# 1. تنظیم مسیرها و پوشه خروجی
+# -----------------------------
+input_folder = "C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/"
+output_folder = "Report_Images_Step4_Final"  # پوشه نهایی گزارش‌ها
+os.makedirs(output_folder, exist_ok=True)
 
-# ---------------------------------------------------------
-# بخش اول: مقایسه در حوزه زمان (Time-Domain)
-# ---------------------------------------------------------
-print("Generating Time-Domain Comparison Plot...")
+print(f"Final Comparison Images will be saved in: {os.getcwd()}\\{output_folder}")
 
-# انتخاب یک کانال برای نمایش
-# معمولاً کانال‌های جلوی سر (Frontal) مثل Fp1, Fp2, Fz بیشترین آرتیفکت پلک را دارند
-# ما اولین کانال موجود در لیست را انتخاب می‌کنیم یا اگر Fp1 بود آن را برمی‌داریم
-target_ch = [ch for ch in epochs_final.ch_names if 'Fp1' in ch]
-picked_ch = target_ch[0] if target_ch else epochs_final.ch_names[0]
+# پیدا کردن فایل‌ها
+all_files = glob.glob(os.path.join(input_folder, "Subject_*.edf"))
+all_files.sort()
 
-print(f"Inspecting Channel: {picked_ch}")
+# تنظیمات پردازش
+low_cut = 0.5
+high_cut = 45.0
+notch_freq = 50.0
+epoch_dur = 2.0
+n_ica_components = 15
 
-# دریافت داده‌های خام (Raw) - برای مقایسه، ۱۰ ثانیه اول را می‌گیریم
-# نکته: چون داده خام پیوسته است و داده نهایی اپوک شده، ما سعی می‌کنیم چند اپوک نهایی را به هم بچسبانیم
-# تا طولشان برای نمایش بصری یکی شود.
+# ==========================================
+# شروع پردازش روی تمام فایل‌ها
+# ==========================================
+for file_path in all_files:
+    subject_name = os.path.splitext(os.path.basename(file_path))[0]
+    print(f"\nProcessing: {subject_name}")
 
-# گرفتن ۳ اپوک اول از داده‌های تمیز شده
-clean_data_segment = epochs_final.get_data(picks=picked_ch, copy=True)[0:3, 0, :].flatten()
+    try:
+        # --- بخش ۱: آماده‌سازی داده خام (Raw) ---
+        raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
+        mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
+        raw.rename_channels(mapping)
+        if 'Trig' in raw.ch_names: raw.set_channel_types({'Trig': 'stim'}) 
+        try: raw.set_montage(mne.channels.make_standard_montage('standard_1020'), match_case=False)
+        except: pass
+        raw.pick_types(eeg=True, eog=False, stim=False, exclude='bads')
 
-# گرفتن معادل زمانی آن از داده خام (برای نمایش)
-# طول زمانی که می‌خواهیم نمایش دهیم (تعداد نقاط)
-n_samples_to_plot = len(clean_data_segment)
-raw_data_segment, times = raw.get_data(picks=picked_ch, start=0, stop=n_samples_to_plot, return_times=True)
-raw_data_segment = raw_data_segment[0] # حذف بعد کانال
+        # ذخیره کپی خام برای رسم
+        raw_for_plot = raw.copy()
 
-# رسم نمودار زمانی
-fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=False)
+        # --- بخش ۲: پردازش‌ها ---
+        raw.notch_filter(notch_freq, verbose=False)
+        raw.filter(low_cut, high_cut, verbose=False)
+        epochs = mne.make_fixed_length_epochs(raw, duration=epoch_dur, preload=True, verbose=False)
+        
+        ar = AutoReject(n_interpolate=[1, 2], consensus=[0.6], random_state=42, verbose=False)
+        epochs_clean = ar.fit_transform(epochs)
 
-# نمودار داده خام
-ax1.plot(times, raw_data_segment, color='red', alpha=0.7, label='Raw Data (Drift + Artifacts)')
-ax1.set_title(f'Time Domain: RAW Data ({picked_ch})')
-ax1.set_ylabel('Amplitude (Volts)')
-ax1.legend(loc="upper right")
-ax1.grid(True, linestyle='--', alpha=0.6)
+        # --- بخش ۳: ICA و حذف اتوماتیک پلک ---
+        ica = ICA(n_components=n_ica_components, max_iter='auto', random_state=97)
+        ica.fit(epochs_clean)
 
-# نمودار داده نهایی
-# محور زمان جدید برای داده اپوک شده
-times_clean = np.linspace(0, len(clean_data_segment)/raw.info['sfreq'], len(clean_data_segment))
-ax2.plot(times_clean, clean_data_segment, color='blue', label='Final Clean Data (Flat Baseline + No Blinks)')
-ax2.set_title(f'Time Domain: FINAL Data ({picked_ch}) - After Filter, AutoReject & ICA')
-ax2.set_xlabel('Time (s)')
-ax2.set_ylabel('Amplitude (Volts)')
-ax2.legend(loc="upper right")
-ax2.grid(True, linestyle='--', alpha=0.6)
+        # تشخیص اتوماتیک با استفاده از کانال Fp1
+        eog_inds, _ = ica.find_bads_eog(epochs_clean, ch_name='Fp1', threshold=2.5)
+        if eog_inds: ica.exclude = eog_inds
+        
+        epochs_final = epochs_clean.copy()
+        ica.apply(epochs_final)
 
-plt.tight_layout()
-plt.show()
+        # ==========================================
+        # بخش ۴: تولید نمودارهای مقایسه‌ای
+        # ==========================================
+        fig = plt.figure(figsize=(12, 10))
+        
+        # الف) رسم حوزه زمان
+        target_ch = [ch for ch in epochs_final.ch_names if 'Fp1' in ch]
+        picked_ch = target_ch[0] if target_ch else epochs_final.ch_names[0]
 
-print("Check point 1: Look at the graphs above.")
-print("  - Is the Baseline flat in the blue graph? (Should be yes)")
-print("  - Are large blinks (huge spikes) removed in the blue graph? (Should be yes)")
+        # داده خام (۶ ثانیه)
+        raw_data, t_raw = raw_for_plot.get_data(picks=picked_ch, start=0, stop=int(6*raw.info['sfreq']), return_times=True)
+        # داده نهایی (۳ اپوک)
+        clean_data = epochs_final.get_data(picks=picked_ch, copy=True)[0:3, 0, :].flatten()
+        t_clean = np.linspace(0, 6, len(clean_data))
 
+        ax1 = fig.add_subplot(3, 1, 1)
+        ax1.plot(t_raw, raw_data[0], 'r', alpha=0.7)
+        ax1.set_title(f"Raw Data ({picked_ch})")
+        
+        ax2 = fig.add_subplot(3, 1, 2)
+        ax2.plot(t_clean, clean_data, 'b')
+        ax2.set_title("Final Clean Data")
 
-# ---------------------------------------------------------
-# بخش دوم: مقایسه در حوزه فرکانس (PSD Comparison)
-# ---------------------------------------------------------
-print("\nGenerating PSD Comparison Plot...")
+        # ب) رسم PSD
+        ax3 = fig.add_subplot(3, 1, 3)
+        psds_raw, freqs = raw_for_plot.compute_psd(fmax=60).get_data(return_freqs=True)
+        psds_clean, freqs_c = epochs_final.compute_psd(fmax=60).get_data(return_freqs=True)
+        
+        ax3.plot(freqs, 10*np.log10(psds_raw.mean(axis=0)), 'r--', label='Raw')
+        ax3.plot(freqs_c, 10*np.log10(psds_clean.mean(axis=0).mean(axis=0)), 'b', label='Clean')
+        ax3.legend()
+        ax3.set_title("PSD Comparison")
+        ax3.axvline(50, color='gray', linestyle=':') # خط ۵۰ هرتز
 
-# محاسبه PSD برای داده خام
-# fmax را تا ۶۰ می‌گذاریم تا هم ۵۰ هرتز (برق) را ببینیم هم آلفا (۱۰ هرتز)
-spectrum_raw = raw.compute_psd(fmax=60, picks='eeg')
-psds_raw, freqs_raw = spectrum_raw.get_data(return_freqs=True)
-# میانگین گیری روی تمام کانال‌ها برای دیدن طیف کلی
-psd_raw_mean = 10 * np.log10(psds_raw.mean(axis=0))
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_folder, f"Report_Step4_{subject_name}.png"))
+        plt.close(fig)
 
-# محاسبه PSD برای داده نهایی (Clean)
-spectrum_clean = epochs_final.compute_psd(fmax=60, picks='eeg')
-psds_clean, freqs_clean = spectrum_clean.get_data(return_freqs=True)
-# میانگین گیری روی تمام کانال‌ها و تمام اپوک‌ها
-psd_clean_mean = 10 * np.log10(psds_clean.mean(axis=0).mean(axis=0))
+    except Exception as e:
+        print(f"Error: {e}")
 
-
-# رسم نمودار مقایسه‌ای PSD
-plt.figure(figsize=(10, 6))
-
-plt.plot(freqs_raw, psd_raw_mean, color='red', linestyle='--', label='Raw Data', linewidth=1.5)
-plt.plot(freqs_clean, psd_clean_mean, color='blue', label='Final Clean Data', linewidth=2)
-
-# اضافه کردن خطوط راهنما برای بررسی چشمی
-plt.axvline(x=50, color='gray', linestyle=':', label='50Hz (Line Noise)')
-plt.axvline(x=10, color='green', linestyle=':', label='10Hz (Alpha Peak)')
-
-plt.title('Frequency Domain Comparison (PSD)')
-plt.xlabel('Frequency (Hz)')
-plt.ylabel('Power Spectral Density (dB)')
-plt.legend()
-plt.grid(True)
-plt.xlim(0, 60)
-
-plt.show()
-
-print("Check point 2: Look at the PSD graph.")
-print("  - 50 Hz Check: Is the peak at 50Hz gone in the Blue line?")
-print("  - Alpha Check: Do you see a bump around 10Hz (Brain signal)?")
-print("  - Shape Check: Does the curve generally go down (1/f shape)?")
-
-print("\nStep 4 Complete.")
+print("Done.")
 ```
 
 
@@ -664,86 +573,169 @@ print("\nStep 4 Complete.")
 </div>
 
 ```python
-# ==========================================
-# Ghasem Step 5: Per-Channel PSD Analysis
-# ==========================================
-print("\n" + "=" * 30)
-print("STARTING STEP 5: Per-Channel PSD (Logarithmic)")
-print("=" * 30)
-
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+from mne.preprocessing import ICA
+import glob
+import os
 import math
 
-# 1. تنظیم پارامترهای طیفی (طبق دستور: 0.5 تا 55 هرتز)
-fmin, fmax = 0.5, 60.0  # تا 60 می‌گیریم که حذف شدن 50 هرتز را ببینیم
+# ==========================================
+# تنظیمات اولیه و مسیرها
+# ==========================================
+input_folder = "C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/"
+output_folder = "Report_Images_Step5_PSD"  # پوشه خروجی عکس‌های گام ۵
+os.makedirs(output_folder, exist_ok=True)
 
-print("Calculating PSDs for comparison...")
+print(f"PSD Comparison Images will be saved in: {os.getcwd()}\\{output_folder}")
 
-# محاسبه PSD برای داده خام (Raw)
-# برای اینکه مقایسه عادلانه باشد، از داده Raw فقط بخش‌های EEG را می‌گیریم
-psd_raw_inst = raw.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
-psds_raw, freqs = psd_raw_inst.get_data(return_freqs=True)
-# تبدیل به میانگین در طول زمان (چون Raw پیوسته است ولی خروجی PSD آرایه است)
-# psds_raw shape: (n_channels, n_freqs) - اینجا نیازی به تغییر خاصی نیست چون compute_psd روی Raw خودش میانگین می‌گیرد.
+# پیدا کردن تمام فایل‌های EDF
+all_files = glob.glob(os.path.join(input_folder, "Subject_*.edf"))
+all_files.sort()
 
-# محاسبه PSD برای داده نهایی (Epochs Final)
-psd_clean_inst = epochs_final.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
-psds_clean, _ = psd_clean_inst.get_data(return_freqs=True)
-# psds_clean shape: (n_epochs, n_channels, n_freqs)
-# باید روی اپوک‌ها میانگین بگیریم تا به ابعاد (n_channels, n_freqs) برسیم
-psds_clean_mean = psds_clean.mean(axis=0)
+# پارامترهای پردازش
+low_cut = 0.5
+high_cut = 45.0
+notch_freq = 50.0
+epoch_dur = 2.0
+n_ica_components = 15
+fmin, fmax = 0.5, 60.0  # محدوده فرکانسی نمودار PSD
 
-# 2. تنظیمات نمودار (Grid Layout)
-n_channels = len(epochs_final.ch_names)
-n_cols = 4  # تعداد ستون‌ها
-n_rows = math.ceil(n_channels / n_cols)  # محاسبه تعداد ردیف‌ها
+# ==========================================
+# شروع حلقه پردازش روی ۱۰ فایل
+# ==========================================
+for file_path in all_files:
+    subject_name = os.path.splitext(os.path.basename(file_path))[0]
+    print(f"\n" + "=" * 60)
+    print(f"Processing Per-Channel PSD for: {subject_name}")
+    print("=" * 60)
 
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 3 * n_rows), constrained_layout=True)
-axes = axes.flatten()  # تبدیل ماتریس محورها به یک لیست ساده
+    try:
+        # ---------------------------------------------------------
+        # 1. بارگذاری داده و آماده‌سازی اولیه
+        # ---------------------------------------------------------
+        raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
 
-# 3. رسم نمودار برای هر کانال
-for idx, ch_name in enumerate(epochs_final.ch_names):
-    ax = axes[idx]
+        # اصلاح نام کانال‌ها
+        mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
+        raw.rename_channels(mapping)
+        if 'Trig' in raw.ch_names: raw.set_channel_types({'Trig': 'stim'})
 
-    # دریافت داده‌های مربوط به آن کانال خاص
-    # نکته: ترتیب کانال‌ها در Raw و Epochs ممکن است متفاوت باشد، با اسم پیدا می‌کنیم
-    raw_ch_idx = raw.ch_names.index(ch_name)
-    clean_ch_idx = epochs_final.ch_names.index(ch_name)
+        try:
+            raw.set_montage('standard_1020', match_case=False)
+        except:
+            pass
 
-    # رسم داده خام (قرمز)
-    ax.plot(freqs, psds_raw[raw_ch_idx], color='red', alpha=0.6, linewidth=1, label='Before (Raw)')
+        raw.pick_types(eeg=True, eog=False, stim=False, exclude='bads')
 
-    # رسم داده تمیز (آبی)
-    ax.plot(freqs, psds_clean_mean[clean_ch_idx], color='blue', alpha=0.8, linewidth=1.5, label='After (Clean)')
+        # *** محاسبه PSD برای داده خام (قبل از هر فیلتری) ***
+        # این همان خط قرمز (Before) در نمودار خواهد بود
+        print("   -> Calculating Raw PSD...")
+        psd_raw_inst = raw.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', 
+                                       n_fft=int(raw.info['sfreq']*2), verbose=False)
+        psds_raw, freqs = psd_raw_inst.get_data(return_freqs=True)
+        # psds_raw shape: (n_channels, n_freqs)
 
-    # تنظیمات ظاهری (طبق دستور: محور عمودی لگاریتمی)
-    ax.set_yscale('log')  # محور عمودی لگاریتمی
-    ax.set_title(ch_name, fontsize=10, fontweight='bold')
-    ax.grid(True, which="both", ls="-", alpha=0.3)
+        # ---------------------------------------------------------
+        # 2. اعمال پایپ‌لاین تمیزسازی (Cleaning Pipeline)
+        # ---------------------------------------------------------
+        # الف) فیلتر فرکانسی
+        raw.notch_filter(notch_freq, verbose=False)
+        raw.filter(low_cut, high_cut, verbose=False)
 
-    # فقط برای نمودارهای ستون اول و ردیف آخر لیبل می‌گذاریم تا شلوغ نشود
-    if idx >= (n_rows - 1) * n_cols:
-        ax.set_xlabel('Frequency (Hz)')
-    if idx % n_cols == 0:
-        ax.set_ylabel(r'PSD (${\mu V^2}/{Hz}$)')
+        # ب) اپوک‌بندی
+        epochs = mne.make_fixed_length_epochs(raw, duration=epoch_dur, preload=True, verbose=False)
 
-    # خط چین برای 50 هرتز (چک کردن ناچ فیلتر)
-    ax.axvline(x=50, color='gray', linestyle='--', alpha=0.5, linewidth=0.8)
+        # ج) AutoReject
+        ar = AutoReject(n_interpolate=[1, 2], consensus=[0.6], random_state=42, verbose=False)
+        epochs_clean = ar.fit_transform(epochs)
 
-# خاموش کردن محورهای اضافی (اگر تعداد کانال‌ها مضرب 4 نبود)
-for i in range(n_channels, len(axes)):
-    axes[i].axis('off')
+        # د) ICA (حذف پلک)
+        ica = ICA(n_components=n_ica_components, max_iter='auto', random_state=97)
+        ica.fit(epochs_clean, verbose=False)
+        # حذف اتوماتیک با Fp1
+        eog_inds, _ = ica.find_bads_eog(epochs_clean, ch_name='Fp1', threshold=2.5)
+        if eog_inds:
+            ica.exclude = eog_inds
+        
+        epochs_final = epochs_clean.copy()
+        ica.apply(epochs_final, verbose=False)
 
-# اضافه کردن لجند کلی در بالای نمودار
-handles, labels = axes[0].get_legend_handles_labels()
-fig.legend(handles, labels, loc='upper center', ncol=2, fontsize=12)
-fig.suptitle('Per-Channel PSD: Before vs After Preprocessing', fontsize=16, y=1.02)
+        # *** محاسبه PSD برای داده نهایی (بعد از تمیزسازی) ***
+        # این همان خط آبی (After) در نمودار خواهد بود
+        print("   -> Calculating Clean PSD...")
+        psd_clean_inst = epochs_final.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', 
+                                                  n_fft=int(raw.info['sfreq']*2), verbose=False)
+        psds_clean, _ = psd_clean_inst.get_data(return_freqs=True)
+        # میانگین‌گیری روی اپوک‌ها برای رسیدن به (n_channels, n_freqs)
+        psds_clean_mean = psds_clean.mean(axis=0)
 
-plt.show()
+        # ---------------------------------------------------------
+        # 3. رسم نمودار شبکه‌ای (Grid Plot)
+        # ---------------------------------------------------------
+        print("   -> Generating Plot...")
+        
+        n_channels = len(epochs_final.ch_names)
+        n_cols = 4
+        n_rows = math.ceil(n_channels / n_cols)
 
-print("Step 5 Complete. Analysis:")
-print("1. 50Hz Noise: Check if the sharp spike at 50Hz (in Red) is gone or reduced in Blue.")
-print("2. Low Freq Drift: Check if the Red line is very high near 0-1 Hz and Blue is controlled.")
-print("3. Signal Preservation: Ensure Blue follows Red shape in Alpha/Beta (8-30 Hz) and isn't zero.")
+        # ابعاد تصویر را بر اساس تعداد ردیف داینامیک می‌کنیم
+        fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 3.5 * n_rows), constrained_layout=True)
+        axes = axes.flatten()
+
+        for idx, ch_name in enumerate(epochs_final.ch_names):
+            ax = axes[idx]
+
+            # پیدا کردن اندیس کانال در داده Raw (چون ممکن است ترتیب فرق کرده باشد یا کانالی حذف شده باشد)
+            if ch_name in raw.ch_names:
+                raw_ch_idx = raw.ch_names.index(ch_name)
+                # رسم داده خام (قرمز)
+                ax.plot(freqs, psds_raw[raw_ch_idx], color='red', alpha=0.6, linewidth=1, label='Before (Raw)')
+            
+            # پیدا کردن اندیس در داده Clean
+            clean_ch_idx = epochs_final.ch_names.index(ch_name)
+            # رسم داده تمیز (آبی)
+            ax.plot(freqs, psds_clean_mean[clean_ch_idx], color='blue', alpha=0.8, linewidth=1.5, label='After (Clean)')
+
+            # تنظیمات ظاهری
+            ax.set_yscale('log')
+            ax.set_title(ch_name, fontsize=11, fontweight='bold')
+            ax.grid(True, which="both", ls="-", alpha=0.3)
+            
+            # لیبل‌ها فقط در حاشیه
+            if idx >= (n_rows - 1) * n_cols:
+                ax.set_xlabel('Frequency (Hz)')
+            if idx % n_cols == 0:
+                # استفاده از r'' برای جلوگیری از وارنینگ لاتک
+                ax.set_ylabel(r'PSD (${\mu V^2}/{Hz}$)')
+
+            # خط چین ۵۰ هرتز
+            ax.axvline(x=50, color='gray', linestyle='--', alpha=0.5, linewidth=0.8)
+
+        # مخفی کردن محورهای خالی
+        for i in range(n_channels, len(axes)):
+            axes[i].axis('off')
+
+        # لجند و عنوان کلی
+        handles, labels = axes[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc='upper center', ncol=2, fontsize=12, bbox_to_anchor=(0.5, 1.02))
+        fig.suptitle(f'Per-Channel PSD Analysis: {subject_name}', fontsize=16, y=1.03)
+
+        # ذخیره تصویر
+        save_name = os.path.join(output_folder, f"{subject_name}_Channel_PSD.png")
+        plt.savefig(save_name, bbox_inches='tight')
+        plt.close(fig)  # آزادسازی حافظه
+
+        print(f"   -> Saved: {subject_name}_Channel_PSD.png")
+
+    except Exception as e:
+        print(f"   !!! Error processing {subject_name}: {e}")
+
+print("\n" + "=" * 60)
+print("Step 5 Processing Complete!")
+print(f"Check folder: {output_folder}")
 ```
 
 <div dir="rtl">
@@ -799,72 +791,416 @@ print("3. Signal Preservation: Ensure Blue follows Red shape in Alpha/Beta (8-30
 </div>
 
 ```python
-# ==========================================
-# Ghasem Step 6: Topomaps (Spatial Distribution)
-# ==========================================
-print("\n" + "=" * 30)
-print("STARTING STEP 6: Plotting Topomaps (Theta, Alpha, Beta)")
-print("=" * 30)
-
-import matplotlib.pyplot as plt
-import numpy as np
 import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+from mne.preprocessing import ICA
+import glob
+import os
 
-# 1. تعریف باندهای فرکانسی
+# ==========================================
+# 1. تنظیمات مسیرها و پوشه خروجی
+# ==========================================
+input_folder = "C:/Users/Victus 16/PycharmProjects/SignalSystem/subjects/"
+output_folder = "Report_Images_Step6_Topomaps"  # پوشه خروجی جدید
+os.makedirs(output_folder, exist_ok=True)
+
+print(f"Topomap Images will be saved in: {os.getcwd()}\\{output_folder}")
+
+# پیدا کردن تمام فایل‌های EDF
+all_files = glob.glob(os.path.join(input_folder, "Subject_*.edf"))
+all_files.sort()
+
+# پارامترهای پردازش (مشابه گام‌های قبل برای یکسان بودن نتایج)
+low_cut = 0.5
+high_cut = 45.0
+notch_freq = 50.0
+epoch_dur = 2.0
+n_ica_components = 15
+
+# تعریف باندهای فرکانسی برای رسم نقشه
 freq_bands = {
     "Theta (4-8 Hz)": (4, 8),
     "Alpha (8-12 Hz)": (8, 12),
     "Beta (12-30 Hz)": (12, 30)
 }
 
-# 2. محاسبه طیف کلی (PSD)
-print("Calculating Power Spectral Density (Welch)...")
-# محاسبه PSD روی داده نهایی
-spectrum = epochs_final.compute_psd(method='welch', fmin=1, fmax=40, n_fft=int(sfreq*2))
-psds, freqs = spectrum.get_data(return_freqs=True)
-psds_mean = psds.mean(axis=0)
+# ==========================================
+# شروع حلقه پردازش روی تمام فایل‌ها
+# ==========================================
+for file_path in all_files:
+    subject_name = os.path.splitext(os.path.basename(file_path))[0]
+    print(f"\n" + "=" * 60)
+    print(f"Processing Topomaps for: {subject_name}")
+    print("=" * 60)
 
-# 3. رسم نمودار
-fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-fig.suptitle('Spatial Distribution of Brain Rhythms (Power in dB)', fontsize=16)
+    try:
+        # ---------------------------------------------------------
+        # 1. بارگذاری و پیش‌پردازش اولیه
+        # ---------------------------------------------------------
+        raw = mne.io.read_raw_edf(file_path, preload=True, verbose=False)
 
-for ax, (band_name, (fmin, fmax)) in zip(axes, freq_bands.items()):
+        # اصلاح نام کانال‌ها
+        mapping = {name: name.replace('-LE', '') for name in raw.ch_names if '-LE' in name}
+        raw.rename_channels(mapping)
+        if 'Trig' in raw.ch_names: raw.set_channel_types({'Trig': 'stim'})
+
+        # تنظیم مکان سنسورها (حیاتی برای Topomap)
+        try:
+            montage = mne.channels.make_standard_montage('standard_1020')
+            raw.set_montage(montage, match_case=False)
+        except ValueError:
+            print("   !!! Warning: Standard 10-20 montage not found. Skipping plot.")
+            continue # بدون مونتاژ نمی‌توان نقشه رسم کرد
+
+        raw.pick_types(eeg=True, eog=False, stim=False, exclude='bads')
+
+        # ---------------------------------------------------------
+        # 2. پایپ‌لاین تمیزسازی (Filter -> Epoch -> AR -> ICA)
+        # ---------------------------------------------------------
+        # الف) فیلترها
+        raw.notch_filter(notch_freq, verbose=False)
+        raw.filter(low_cut, high_cut, verbose=False)
+
+        # ب) اپوک‌بندی
+        epochs = mne.make_fixed_length_epochs(raw, duration=epoch_dur, preload=True, verbose=False)
+
+        # ج) AutoReject (تمیزسازی داده‌های پرت)
+        ar = AutoReject(n_interpolate=[1, 2], consensus=[0.6], random_state=42, verbose=False)
+        epochs_clean = ar.fit_transform(epochs)
+
+        # د) ICA (حذف آرتیفکت چشم)
+        ica = ICA(n_components=n_ica_components, max_iter='auto', random_state=97)
+        ica.fit(epochs_clean, verbose=False)
+        
+        # شناسایی اتوماتیک با کانال Fp1
+        eog_inds, _ = ica.find_bads_eog(epochs_clean, ch_name='Fp1', threshold=2.5)
+        if eog_inds:
+            ica.exclude = eog_inds
+        
+        epochs_final = epochs_clean.copy()
+        ica.apply(epochs_final, verbose=False)
+
+        # ---------------------------------------------------------
+        # 3. محاسبات طیفی و رسم نقشه‌ها (Step 6 Logic)
+        # ---------------------------------------------------------
+        print("   -> Calculating PSD and generating Topomaps...")
+        
+        # محاسبه PSD به روش Welch روی داده‌های نهایی
+        spectrum = epochs_final.compute_psd(method='welch', fmin=1, fmax=40, n_fft=int(raw.info['sfreq']*2), verbose=False)
+        psds, freqs = spectrum.get_data(return_freqs=True)
+        
+        # میانگین‌گیری روی تمام اپوک‌ها (average over time)
+        # shape: (n_channels, n_freqs)
+        psds_mean = psds.mean(axis=0)
+
+        # ایجاد شکل نمودار (1 سطر و 3 ستون)
+        fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+        fig.suptitle(f'Spatial Distribution of Brain Rhythms: {subject_name}', fontsize=16)
+
+        # حلقه روی باندهای فرکانسی
+        for ax, (band_name, (fmin, fmax)) in zip(axes, freq_bands.items()):
+            # پیدا کردن اندیس‌های فرکانسی
+            freq_indices = np.where((freqs >= fmin) & (freqs <= fmax))[0]
+            
+            # میانگین توان در آن باند برای هر کانال
+            band_power = psds_mean[:, freq_indices].mean(axis=1)
+            
+            # تبدیل به دسی‌بل (Log Scale)
+            band_power_db = 10 * np.log10(band_power)
+            
+            # رسم Topomap
+            im, _ = mne.viz.plot_topomap(
+                band_power_db,
+                epochs_final.info,
+                axes=ax,
+                show=False,
+                cmap='RdBu_r',       # قرمز = بالا، آبی = پایین
+                names=epochs_final.ch_names,
+                show_names=False,
+                contours=6
+            )
+            ax.set_title(band_name, fontsize=12)
+
+        # اضافه کردن Colorbar (مشترک یا سمت راست)
+        cbar_ax = fig.add_axes([0.92, 0.15, 0.015, 0.7]) # [left, bottom, width, height]
+        clb = fig.colorbar(im, cax=cbar_ax)
+        clb.set_label('Power Spectral Density (dB)')
+
+        # ذخیره تصویر
+        save_name = os.path.join(output_folder, f"{subject_name}_Topomaps.png")
+        plt.savefig(save_name, bbox_inches='tight')
+        plt.close(fig)  # بستن برای آزادسازی حافظه
+
+        print(f"   -> Saved: {subject_name}_Topomaps.png")
+
+    except Exception as e:
+        print(f"   !!! Error processing {subject_name}: {e}")
+
+print("\n" + "=" * 60)
+print("Step 6 Processing Complete!")
+print(f"Check folder: {output_folder}")
+```
+
+
+<div dir="rtl">
+
+---
+
+## ۱۸. گزارش گام هفتم: تحلیل اتصال‌پذیری مغزی (Connectivity Analysis)
+
+هدف نهایی این پروژه، فراتر از بررسی فعالیت تک‌تک کانال‌ها، درک **تعاملات و ارتباطات (Interactions)** بین نواحی مختلف مغز است. در این گام، "اتصال‌پذیری عملکردی" (Functional Connectivity) محاسبه شد تا مشخص شود کدام نواحی مغز به صورت هماهنگ با هم فعالیت می‌کنند و شبکه مغزی (Brain Network) را تشکیل می‌دهند.
+
+### ۱۸-۱. روش پیاده‌سازی (Amplitude-based)
+طبق دستورالعمل پروژه، به جای استفاده از توابع آماده‌ای که مستقیماً اتصال را خروجی می‌دهند، الگوریتم به صورت دستی و مرحله‌به‌مرحله بر اساس **همبستگی پوش سیگنال** پیاده‌سازی شد:
+
+1.  **فیلترینگ:** داده‌های تمیز شده (Clean Epochs) در سه باند تتا، آلفا و بتا جدا شدند.
+2.  **استخراج پوش (Envelope):** با استفاده از **تبدیل هیلبرت (Hilbert Transform)**، سیگنال تحلیلی محاسبه شد. سپس قدرمطلق آن گرفته شد تا "پوش لحظه‌ای" (Envelope) سیگنال بدست آید.
+3.  **محاسبه همبستگی:** ضریب **همبستگی پیرسون (Pearson Correlation)** بین پوش سیگنال تمام جفت-کانال‌ها محاسبه گردید. این معیار نشان می‌دهد که آیا افزایش انرژی در یک ناحیه با افزایش انرژی در ناحیه دیگر همراه است یا خیر.
+4.  **آستانه‌گذاری (Thresholding):** برای جلوگیری از شلوغی نمودار و نمایش تنها ارتباطات قوی و معنادار، مقادیر همبستگی کمتر از یک حد مشخص (در اینجا ۰.۵) حذف (صفر) شدند.
+
+### ۱۸-۲. پاسخ به سوالات تئوری گام هفتم
+
+**سوال ۱: چرا تحلیل اتصال‌پذیری روی اپوک‌های کوتاه (مثلاً ۲ ثانیه) انجام می‌شود؟**
+**پاسخ:**
+سیگنال EEG ذاتاً **غیر-ایستا (Non-stationary)** است؛ یعنی ویژگی‌های آماری آن (مثل میانگین و واریانس) در طول زمان تغییر می‌کند. اما اگر بازه‌های زمانی را کوتاه در نظر بگیریم، می‌توان با تقریب خوبی فرض کرد سیگنال در آن بازه "شبه-ایستا" (Quasi-stationary) است. این فرض ایستایی برای اعتبار ریاضی محاسبات همبستگی و تحلیل‌های طیفی ضروری است.
+
+**سوال ۲: تفاوت روش مبتنی بر دامنه (Amplitude) با فاز (Phase) چیست؟**
+**پاسخ:**
+* **اتصال مبتنی بر دامنه (Amplitude/Envelope Correlation):** بررسی می‌کند که آیا "شدت انرژی" دو ناحیه همزمان بالا و پایین می‌رود؟ (مثلاً وقتی پشت سر فعال می‌شود، آیا جلوی سر هم همزمان فعال می‌شود؟). این روش ساده و شهودی است اما ممکن است تحت تاثیر "هدایت حجمی" قرار گیرد.
+* **اتصال مبتنی بر فاز (Phase Synchronization):** بررسی می‌کند که آیا نوسانات دو سیگنال با هم "هم‌گام" هستند یا خیر (اختلاف فاز ثابت)، حتی اگر دامنه‌هایشان متفاوت باشد. این روش پیچیده‌تر است اما اطلاعات زمانی دقیق‌تری از سرعت انتقال پیام می‌دهد.
+
+### ۱۸-۳. نتایج اتصال‌پذیری (۱۰ آزمودنی)
+در نمودارهای دایره‌ای زیر، هر خط نشان‌دهنده یک **ارتباط عملکردی قوی** (بالای آستانه ۵۰٪) بین دو الکترود است. رنگ خطوط نشان‌دهنده شدت همبستگی است.
+
+| نام آزمودنی | نمودار اتصال‌پذیری (Connectivity Circle) |
+| :---: | :---: |
+| **Subject 01** | ![Conn](./Report_Images_Step7_Connectivity/Subject_01_Connectivity.png) |
+| **Subject 02** | ![Conn](./Report_Images_Step7_Connectivity/Subject_02_Connectivity.png) |
+| **Subject 03** | ![Conn](./Report_Images_Step7_Connectivity/Subject_03_Connectivity.png) |
+| **Subject 04** | ![Conn](./Report_Images_Step7_Connectivity/Subject_04_Connectivity.png) |
+| **Subject 05** | ![Conn](./Report_Images_Step7_Connectivity/Subject_05_Connectivity.png) |
+| **Subject 06** | ![Conn](./Report_Images_Step7_Connectivity/Subject_06_Connectivity.png) |
+| **Subject 07** | ![Conn](./Report_Images_Step7_Connectivity/Subject_07_Connectivity.png) |
+| **Subject 08** | ![Conn](./Report_Images_Step7_Connectivity/Subject_08_Connectivity.png) |
+| **Subject 09** | ![Conn](./Report_Images_Step7_Connectivity/Subject_09_Connectivity.png) |
+| **Subject 10** | ![Conn](./Report_Images_Step7_Connectivity/Subject_10_Connectivity.png) |
+
+---
+
+## ۱۹. پیوست کد: محاسبه دستی اتصال‌پذیری و رسم گراف
+
+کد زیر پیاده‌سازی کامل گام هفتم شامل استفاده از `scipy.signal.hilbert` برای استخراج ویژگی و رسم گراف نهایی با `mne-connectivity` است:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 7: Connectivity Analysis (Manual Implementation)
+# ==========================================
+import mne
+import numpy as np
+import matplotlib.pyplot as plt
+from autoreject import AutoReject
+from mne.preprocessing import ICA
+from mne_connectivity.viz import plot_connectivity_circle
+from scipy.signal import hilbert
+import glob
+import os
+
+# ... (بخش‌های بارگذاری داده مشابه گام‌های قبل) ...
+
+# ---------------------------------------------------------
+# تحلیل اتصال‌پذیری (Connectivity Logic)
+# ---------------------------------------------------------
+print("   -> Calculating Connectivity (Envelope Correlation)...")
+
+node_names = epochs_final.ch_names
+bands = {"Theta": (4, 8), "Alpha": (8, 12), "Beta": (12, 30)}
+corr_threshold = 0.5  # آستانه نمایش ارتباطات
+
+fig = plt.figure(figsize=(18, 6), facecolor='black') 
+
+for i, (band_name, (l_freq, h_freq)) in enumerate(bands.items()):
+    # الف) فیلتر در باند خاص
+    epochs_band = epochs_final.copy().filter(l_freq=l_freq, h_freq=h_freq, verbose=False)
     
-    # الف) برش فرکانسی
-    freq_indices = np.where((freqs >= fmin) & (freqs <= fmax))[0]
+    # ب) تبدیل هیلبرت و استخراج پوش (Envelope)
+    data = epochs_band.get_data(copy=True) 
+    analytic_signal = hilbert(data)
+    envelope = np.abs(analytic_signal) # قدرمطلق سیگنال تحلیلی
     
-    # ب) میانگین‌گیری انرژی
-    band_power = psds_mean[:, freq_indices].mean(axis=1)
+    # ج) چسباندن اپوک‌ها برای همبستگی (Concatenate)
+    n_epochs, n_channels, n_times = envelope.shape
+    envelope_concat = envelope.transpose(1, 0, 2).reshape(n_channels, -1)
     
-    # ج) تبدیل به دسی‌بل
-    band_power_db = 10 * np.log10(band_power)
+    # د) محاسبه ماتریس همبستگی (Pearson Correlation)
+    con_matrix = np.corrcoef(envelope_concat)
+    con_matrix = np.nan_to_num(con_matrix) # رفع خطای احتمالی
     
-    # د) رسم نقشه توپوگرافی (بدون پارامتر show_names)
-    im, _ = mne.viz.plot_topomap(
-        band_power_db,
-        epochs_final.info,
-        axes=ax,
-        show=False,
-        cmap='RdBu_r',
-        names=epochs_final.ch_names, # نام کانال‌ها را نگه می‌داریم
-        # show_names=False, <--- این خط حذف شد تا ارور برطرف شود
-        contours=6
+    # هـ) آستانه‌گذاری (Thresholding)
+    np.fill_diagonal(con_matrix, 0) # حذف قطر اصلی
+    
+    # بررسی وجود اتصال معنادار
+    if np.max(np.abs(con_matrix)) < corr_threshold:
+        continue
+        
+    con_matrix[np.abs(con_matrix) < corr_threshold] = 0 # صفر کردن مقادیر ضعیف
+    
+    # و) رسم نمودار دایره‌ای
+    ax, _ = plot_connectivity_circle(
+        con_matrix, 
+        node_names, 
+        n_lines=300,
+        subplot=(1, 3, i + 1),
+        title=band_name,
+        textcolor='white',
+        facecolor='black',
+        vmin=0, vmax=1, # نرمال‌سازی رنگ
+        show=False
     )
-    
-    ax.set_title(band_name)
-
-# اضافه کردن نوار رنگ
-cbar_ax = fig.add_axes([0.92, 0.15, 0.015, 0.7])
-clb = fig.colorbar(im, cax=cbar_ax)
-clb.set_label('Power Spectral Density (dB)')
-
-print("Plotting complete. Check the new window.")
 plt.show()
+```
 
-print("-" * 30)
-print("INTERPRETATION GUIDE:")
-print("1. Alpha Band: Look at the back of the head. Red means high relaxation.")
-print("2. Theta Band: Red spots might indicate drowsiness.")
-print("3. Beta Band: Usually lower power compared to Alpha.")
-print("-" * 30)
+<div dir="rtl">
+
+---
+
+## ۲۰. گزارش گام هشتم: سیستم تشخیص خودکار (Automated Diagnosis)
+
+این مرحله، گام نهایی و نتیجه‌گیری کل پروژه است. در اینجا ما از داده‌های خامی که در هفت مرحله قبل تمیز و پردازش کردیم، برای **استخراج ویژگی‌های کمی (Feature Extraction)** استفاده می‌کنیم تا وضعیت ذهنی آزمودنی را بدون دخالت انسان تشخیص دهیم.
+
+### ۲۰-۱. متدولوژی و تعریف شاخص‌ها
+برای تبدیل سیگنال مغزی به یک "تشخیص پزشکی"، از نسبت‌های توانی باندها استفاده شده است. این نسبت‌ها استاندارد هستند و در سیستم‌های نوروفیدبک کاربرد دارند:
+
+۱. **شاخص خواب‌آلودگی (Drowsiness Index):**
+این شاخص از نسبت توان باند **آلفا به بتا ($\frac{\alpha}{\beta}$)** به دست می‌آید.
+* **تفسیر:** موج آلفا نشانگر استراحت و موج بتا نشانگر هوشیاری است. غلبه آلفا یعنی مغز به سمت خواب‌آلودگی می‌رود.
+
+۲. **شاخص عدم تمرکز (Inattention Index):**
+این شاخص از نسبت توان باند **تتا به بتا ($\frac{\theta}{\beta}$)** به دست می‌آید (معروف به نسبت TBR در تشخیص ADHD).
+* **تفسیر:** موج تتا با پرسه زدن ذهن و گیجی مرتبط است، در حالی که بتا با تمرکز بیرونی. افزایش این نسبت نشانه حواس‌پرتی است.
+
+### ۲۰-۲. نتایج تشخیص وضعیت (۱۰ آزمودنی)
+در جدول زیر، نقشه‌های مغزی مربوط به این دو شاخص برای تمام آزمودنی‌ها ترسیم شده است. نواحی **قرمز** در نقشه سمت چپ نشان‌دهنده خواب‌آلودگی و در نقشه سمت راست نشان‌دهنده عدم تمرکز هستند.
+
+| نام آزمودنی | نقشه‌های تشخیص (Drowsiness & Inattention) | نتیجه تشخیص خودکار (خروجی الگوریتم) |
+| :---: | :---: | :---: |
+| **Subject 01** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_01_Diagnosis_Map.png) | *Normal / Good Focus* |
+| **Subject 02** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_02_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 03** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_03_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 04** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_04_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 05** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_05_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 06** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_06_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 07** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_07_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 08** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_08_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 09** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_09_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+| **Subject 10** | ![Diag](./Report_Images_Step8_Diagnosis/Subject_10_Diagnosis_Map.png) | *(نتیجه فایل متنی)* |
+
+---
+
+## ۲۱. پاسخ به سوال تحلیلی گام آخر
+
+**سوال: با توجه به مقادیری که از این شاخص‌ها بدست می‌آورید، وضعیت آزمودنی را چگونه تفسیر می‌کنید؟ (قوانین سیستم خبره)**
+
+**پاسخ:**
+بر اساس مقالات علمی و اسلایدهای درس، سیستم تشخیص خودکار ما بر اساس قوانین شرطی (Rule-based) زیر تصمیم‌گیری می‌کند:
+
+**۱. تحلیل نسبت Alpha/Beta (سطح هوشیاری):**
+* **اگر مقدار > ۱.۵ باشد:** فرد در وضعیت **خواب‌آلودگی یا ریلکسیشن عمیق** قرار دارد (غلبه امواج آلفا با کاهش انگیختگی ذهنی مرتبط است).
+* **اگر مقدار < ۰.۸ باشد:** فرد **بسیار هوشیار، فعال یا حتی مضطرب** است (افزایش توان بتا نشان‌دهنده تمرکز بالا یا فعالیت شناختی شدید است).
+* **بین ۰.۸ تا ۱.۵:** فرد در حالت **تعادل و نرمال** قرار دارد.
+
+**۲. تحلیل نسبت Theta/Beta (سطح تمرکز):**
+* **اگر مقدار > ۲.۰ باشد:** احتمال **کاهش تمرکز یا حواس‌پرتی (Mind Wandering)** وجود دارد. این الگوی غالب در اختلال نقص توجه (ADHD) نیز دیده می‌شود.
+* **اگر مقدار <= ۲.۰ باشد:** فرد دارای سطح **تمرکز طبیعی و قابل قبول** است (تعادل مناسب بین فعالیت شناختی و آرامش ذهنی برقرار است).
+
+---
+
+## ۲۲. پیوست کد: پیاده‌سازی سیستم تشخیص خودکار
+
+کد زیر برای محاسبه نسبت‌های توان، رسم نقشه‌ها و تولید گزارش متنی (Diagnosis Report) برای تمام فایل‌ها استفاده شده است:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 8: Automated Diagnosis System
+# ==========================================
+print("\n" + "=" * 40)
+print("STARTING STEP 8: Final Automated Diagnosis")
+print("=" * 40)
+
+import numpy as np
+import matplotlib.pyplot as plt
+import mne
+import os
+
+# ... (بارگذاری و پیش‌پردازش داده‌ها مشابه قبل) ...
+
+# ---------------------------------------------------------
+# 1. محاسبه چگالی طیفی توان (PSD) و استخراج باندها
+# ---------------------------------------------------------
+print("   -> Calculating Band Powers and Ratios...")
+
+# محاسبه PSD (روش Welch)
+spectrum = epochs_final.compute_psd(method='welch', fmin=3, fmax=35, n_fft=int(raw.info['sfreq'] * 2), verbose=False)
+psds, freqs = spectrum.get_data(return_freqs=True)
+psds_mean = psds.mean(axis=0) # میانگین روی اپوک‌ها
+
+# تابع استخراج انرژی باند
+def get_band_power(f_low, f_high):
+    idx = np.logical_and(freqs >= f_low, freqs <= f_high)
+    return psds_mean[:, idx].mean(axis=1)
+
+# محاسبه انرژی باندهای حیاتی
+theta = get_band_power(4, 8)
+alpha = get_band_power(8, 12)
+beta  = get_band_power(12, 30)
+
+# ---------------------------------------------------------
+# 2. محاسبه شاخص‌های طلایی (Indices)
+# ---------------------------------------------------------
+# الف) شاخص خواب‌آلودگی
+drowsiness_index = alpha / beta
+
+# ب) شاخص عدم تمرکز
+inattention_index = theta / beta
+
+# ---------------------------------------------------------
+# 3. سیستم خبره (Expert System Interpretation)
+# ---------------------------------------------------------
+avg_ab = np.mean(drowsiness_index)
+avg_tb = np.mean(inattention_index)
+
+# تفسیر هوشیاری
+if avg_ab > 1.5:
+    status_ab = "DROWSY / RELAXED"
+elif avg_ab < 0.8:
+    status_ab = "ALERT / ANXIOUS"
+else:
+    status_ab = "NORMAL"
+
+# تفسیر تمرکز
+if avg_tb > 2.0:
+    status_tb = "LOW FOCUS (Mind Wandering)"
+else:
+    status_tb = "GOOD FOCUS"
+
+print(f"   -> Diagnosis Result: {status_ab} | {status_tb}")
+
+# ---------------------------------------------------------
+# 4. رسم نقشه‌های مغزی (Topomaps)
+# ---------------------------------------------------------
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# نقشه خواب‌آلودگی
+im1, _ = mne.viz.plot_topomap(drowsiness_index, epochs_final.info, axes=axes[0], show=False, cmap='RdBu_r', contours=6)
+axes[0].set_title('Drowsiness (Alpha/Beta)\nRed = Drowsy')
+
+# نقشه عدم تمرکز
+im2, _ = mne.viz.plot_topomap(inattention_index, epochs_final.info, axes=axes[1], show=False, cmap='Wistia', contours=6)
+axes[1].set_title('Inattention (Theta/Beta)\nDarker = Low Focus')
+
+plt.tight_layout()
+plt.show()
 ```

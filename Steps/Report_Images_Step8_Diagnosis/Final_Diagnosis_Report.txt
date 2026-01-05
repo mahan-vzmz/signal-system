@@ -1,0 +1,54 @@
+==================================================
+       AUTOMATED BRAIN STATE DIAGNOSIS REPORT       
+==================================================
+
+Subject: Subject_01
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 2.42 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 2.43 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_02
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 6.09 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 3.95 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_03
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 1.59 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 2.34 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_04
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 5.86 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 1.90 -> [GOOD FOCUS (Normal)]
+
+Subject: Subject_05
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 2.03 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 4.08 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_06
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 10.64 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 2.38 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_07
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 3.84 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 3.83 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_08
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 11.16 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 14.53 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_09
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 17.02 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 3.86 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
+Subject: Subject_10
+------------------------------
+1. Drowsiness Index (Alpha/Beta): 8.14 -> [DROWSY / RELAXED (High Alpha)]
+2. Inattention Index (Theta/Beta): 4.34 -> [ATTENTION DEFICIT / MIND WANDERING (High Theta)]
+
