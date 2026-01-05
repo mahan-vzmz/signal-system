@@ -609,3 +609,262 @@ print("  - Shape Check: Does the curve generally go down (1/f shape)?")
 
 print("\nStep 4 Complete.")
 ```
+
+
+<div dir="rtl">
+
+---
+
+## ۱۴. گزارش گام پنجم: تحلیل طیفی دقیق به تفکیک کانال (Per-Channel PSD)
+
+در آخرین مرحله از ارزیابی، برای اطمینان از صحت عملکرد فیلترها و عدم حذف اطلاعات حیاتی مغز، نمودار چگالی طیفی توان (PSD) برای **تک‌تک کانال‌ها** به صورت جداگانه رسم و بررسی شد. این کار به ما اجازه می‌دهد تا اگر یک کانال خاص رفتار متفاوتی داشت (مثلاً نویز باقی‌مانده یا فیلتر بیش‌از‌حد)، آن را شناسایی کنیم.
+
+### ۱۴-۱. پاسخ به سوالات تئوری گام پنجم
+
+**سوال ۱: چرا در محاسبه PSD از روش Welch استفاده شده است؟ تفاوت اصلی این روش با یک تبدیل فوریه (FFT) ساده روی کل سیگنال چیست؟**
+**پاسخ:**
+روش FFT ساده اگر مستقیماً روی کل سیگنال نویزی اعمال شود، خروجی دارای واریانس بسیار زیاد و نوسانات شدید (Spiky) خواهد بود که تحلیل آن را دشوار می‌کند.
+روش **Welch** یک روش "تخمین طیفی" است که:
+1.  سیگنال را به قطعات کوچک‌تر (Windows) با همپوشانی (Overlap) تقسیم می‌کند.
+2.  از هر قطعه جداگانه FFT می‌گیرد (Periodogram).
+3.  در نهایت میانگین این قطعات را محاسبه می‌کند.
+این **میانگین‌گیری** باعث کاهش نویزهای تصادفی، صاف‌تر شدن (Smoothing) نمودار و افزایش دقت تخمین طیف فرکانسی می‌شود.
+
+**سوال ۲: چرا در محور عمودی از مقیاس لگاریتمی استفاده کرده‌ایم؟**
+**پاسخ:**
+سیگنال‌های مغزی خاصیت **$1/f$** دارند؛ یعنی توان امواج فرکانس پایین (مثل دلتا در ۱ تا ۴ هرتز) بسیار زیاد (مثلاً $100 \mu V^2$) و توان امواج فرکانس بالا (مثل بتا و گاما) بسیار ناچیز (مثلاً $0.1 \mu V^2$) است.
+اگر از مقیاس خطی استفاده کنیم، امواج فرکانس بالا در برابر امواج فرکانس پایین مانند یک خط صاف روی صفر دیده می‌شوند و تمام جزئیات آن‌ها گم می‌شود. مقیاس **لگاریتمی (دسی‌بل)** باعث فشرده‌سازی دامنه دینامیکی می‌شود و به ما اجازه می‌دهد تا قله‌های بزرگ فرکانس پایین و جزئیات ریز فرکانس بالا را **همزمان و با وضوح مناسب** مشاهده کنیم.
+
+### ۱۴-۲. تحلیل نمودارهای کانال‌به‌کانال
+در تصاویر زیر (نمونه برای آزمودنی‌ها)، خط **قرمز** نشان‌دهنده داده خام و خط **آبی** نشان‌دهنده داده نهایی است.
+* **حذف نویز ۵۰ هرتز:** در تمامی کانال‌ها (حتی کانال‌های نویزی مثل Fp1)، قله تیز ۵۰ هرتز که در نمودار قرمز وجود دارد، در نمودار آبی کاملاً حذف شده است.
+* **رفتار در فرکانس بالا:** از فرکانس ۴۵ هرتز به بعد، نمودار آبی دچار افت شدید می‌شود که نشان‌دهنده عملکرد صحیح فیلتر پایین‌گذر (Low-pass) است.
+* **حفظ قله آلفا:** در کانال‌های پس‌سری (Occipital) و مرکزی، برآمدگی مربوط به موج آلفا (~۱۰ هرتز) در نمودار آبی دقیقاً منطبق بر نمودار قرمز حفظ شده است.
+
+### ۱۴-۳. جدول نتایج نهایی (۱۰ آزمودنی)
+
+| نام آزمودنی | نمودار PSD تفکیکی (Raw vs Clean) |
+| :---: | :---: |
+| **Subject 01** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_01_Channel_PSD.png) |
+| **Subject 02** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_02_Channel_PSD.png) |
+| **Subject 03** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_03_Channel_PSD.png) |
+| **Subject 04** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_04_Channel_PSD.png) |
+| **Subject 05** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_05_Channel_PSD.png) |
+| **Subject 06** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_06_Channel_PSD.png) |
+| **Subject 07** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_07_Channel_PSD.png) |
+| **Subject 08** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_08_Channel_PSD.png) |
+| **Subject 09** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_09_Channel_PSD.png) |
+| **Subject 10** | ![PSD_Ch](./Report_Images_Step5_PSD/Subject_10_Channel_PSD.png) |
+
+---
+
+## ۱۵. پیوست کد: تولید نمودارهای شبکه‌ای PSD
+
+کد زیر برای پردازش دسته‌ای ۱۰ فایل و تولید نمودارهای ماتریسی (Grid Plot) با مقیاس لگاریتمی استفاده شده است:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 5: Per-Channel PSD Analysis
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 5: Per-Channel PSD (Logarithmic)")
+print("=" * 30)
+
+import math
+
+# 1. تنظیم پارامترهای طیفی (طبق دستور: 0.5 تا 55 هرتز)
+fmin, fmax = 0.5, 60.0  # تا 60 می‌گیریم که حذف شدن 50 هرتز را ببینیم
+
+print("Calculating PSDs for comparison...")
+
+# محاسبه PSD برای داده خام (Raw)
+# برای اینکه مقایسه عادلانه باشد، از داده Raw فقط بخش‌های EEG را می‌گیریم
+psd_raw_inst = raw.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
+psds_raw, freqs = psd_raw_inst.get_data(return_freqs=True)
+# تبدیل به میانگین در طول زمان (چون Raw پیوسته است ولی خروجی PSD آرایه است)
+# psds_raw shape: (n_channels, n_freqs) - اینجا نیازی به تغییر خاصی نیست چون compute_psd روی Raw خودش میانگین می‌گیرد.
+
+# محاسبه PSD برای داده نهایی (Epochs Final)
+psd_clean_inst = epochs_final.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
+psds_clean, _ = psd_clean_inst.get_data(return_freqs=True)
+# psds_clean shape: (n_epochs, n_channels, n_freqs)
+# باید روی اپوک‌ها میانگین بگیریم تا به ابعاد (n_channels, n_freqs) برسیم
+psds_clean_mean = psds_clean.mean(axis=0)
+
+# 2. تنظیمات نمودار (Grid Layout)
+n_channels = len(epochs_final.ch_names)
+n_cols = 4  # تعداد ستون‌ها
+n_rows = math.ceil(n_channels / n_cols)  # محاسبه تعداد ردیف‌ها
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 3 * n_rows), constrained_layout=True)
+axes = axes.flatten()  # تبدیل ماتریس محورها به یک لیست ساده
+
+# 3. رسم نمودار برای هر کانال
+for idx, ch_name in enumerate(epochs_final.ch_names):
+    ax = axes[idx]
+
+    # دریافت داده‌های مربوط به آن کانال خاص
+    # نکته: ترتیب کانال‌ها در Raw و Epochs ممکن است متفاوت باشد، با اسم پیدا می‌کنیم
+    raw_ch_idx = raw.ch_names.index(ch_name)
+    clean_ch_idx = epochs_final.ch_names.index(ch_name)
+
+    # رسم داده خام (قرمز)
+    ax.plot(freqs, psds_raw[raw_ch_idx], color='red', alpha=0.6, linewidth=1, label='Before (Raw)')
+
+    # رسم داده تمیز (آبی)
+    ax.plot(freqs, psds_clean_mean[clean_ch_idx], color='blue', alpha=0.8, linewidth=1.5, label='After (Clean)')
+
+    # تنظیمات ظاهری (طبق دستور: محور عمودی لگاریتمی)
+    ax.set_yscale('log')  # محور عمودی لگاریتمی
+    ax.set_title(ch_name, fontsize=10, fontweight='bold')
+    ax.grid(True, which="both", ls="-", alpha=0.3)
+
+    # فقط برای نمودارهای ستون اول و ردیف آخر لیبل می‌گذاریم تا شلوغ نشود
+    if idx >= (n_rows - 1) * n_cols:
+        ax.set_xlabel('Frequency (Hz)')
+    if idx % n_cols == 0:
+        ax.set_ylabel(r'PSD (${\mu V^2}/{Hz}$)')
+
+    # خط چین برای 50 هرتز (چک کردن ناچ فیلتر)
+    ax.axvline(x=50, color='gray', linestyle='--', alpha=0.5, linewidth=0.8)
+
+# خاموش کردن محورهای اضافی (اگر تعداد کانال‌ها مضرب 4 نبود)
+for i in range(n_channels, len(axes)):
+    axes[i].axis('off')
+
+# اضافه کردن لجند کلی در بالای نمودار
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc='upper center', ncol=2, fontsize=12)
+fig.suptitle('Per-Channel PSD: Before vs After Preprocessing', fontsize=16, y=1.02)
+
+plt.show()
+
+print("Step 5 Complete. Analysis:")
+print("1. 50Hz Noise: Check if the sharp spike at 50Hz (in Red) is gone or reduced in Blue.")
+print("2. Low Freq Drift: Check if the Red line is very high near 0-1 Hz and Blue is controlled.")
+print("3. Signal Preservation: Ensure Blue follows Red shape in Alpha/Beta (8-30 Hz) and isn't zero.")
+```
+
+<div dir="rtl">
+
+---
+
+## ۱۶. گزارش گام ششم: رسم نقشه‌های توپوگرافی (Brain Topomaps)
+
+در این مرحله، هدف مشاهده **توزیع فضایی (Spatial Distribution)** انرژی امواج مغزی روی سر است. برخلاف نمودارهای قبلی که تغییرات را در حوزه زمان یا فرکانس نشان می‌دادند، نقشه‌های توپوگرافی (Topoplot) نشان می‌دهند که کدام ناحیه از مغز (جلوی سر، پشت سر، یا طرفین) در یک باند فرکانسی خاص بیشترین فعالیت را دارد.
+
+برای رسم این نقشه‌ها:
+۱. توان سیگنال (PSD) برای تمام کانال‌ها محاسبه شد.
+۲. میانگین توان در باندهای تتا، آلفا و بتا استخراج گردید.
+۳. مقادیر به مقیاس **دسی‌بل (dB)** تبدیل شدند.
+۴. با استفاده از **درون‌یابی (Interpolation)**، فضای خالی بین الکترودها رنگ‌آمیزی شد تا نقشه‌ای پیوسته از سر ایجاد شود.
+
+### ۱۶-۱. پاسخ به سوال تئوری: تفسیر رنگ‌ها و موقعیت‌ها
+
+**سوال: تفسیر شما از رنگ‌ها و موقعیت‌هایی که در هر ناحیه سر می‌بینید چیست؟**
+
+**پاسخ:**
+در نقشه‌های توپوگرافی رسم شده با طرح رنگی `RdBu_r`:
+* **رنگ قرمز (گرم):** نشان‌دهنده **توان بالا (High Power)** یا فعالیت شدید آن باند فرکانسی در آن ناحیه است.
+* **رنگ آبی (سرد):** نشان‌دهنده **توان پایین (Low Power)** یا فعالیت کم است.
+
+**تفسیر فیزیولوژیک بر اساس موقعیت:**
+۱.  **باند آلفا (Alpha, 8-12 Hz):** در حالت استراحت با چشمان بسته، باید **بیشترین انرژی (قرمز پررنگ)** را در ناحیه **پس‌سری (Occipital - پشت سر)** داشته باشد. این نشانه سلامت ریتم پایه مغز است.
+۲.  **باند تتا (Theta, 4-8 Hz):** افزایش انرژی این باند در حالت بیداری معمولاً نشانه **خواب‌آلودگی** یا عدم تمرکز است. اگر در نواحی مرکزی یا گیجگاهی قرمز شود، نیاز به بررسی دارد.
+۳.  **باند بتا (Beta, 12-30 Hz):** این باند مربوط به **تفکر فعال و تمرکز** است و معمولاً در **نواحی پیشانی (Frontal)** دیده می‌شود. دامنه (شدت رنگ) آن معمولاً کمتر از آلفا است.
+
+### ۱۶-۲. جدول نقشه‌های مغزی (۱۰ آزمودنی)
+
+در جدول زیر، توزیع انرژی سه باند اصلی برای تمام آزمودنی‌ها نمایش داده شده است.
+
+| نام آزمودنی | نقشه‌های توپوگرافی (Theta, Alpha, Beta) |
+| :---: | :---: |
+| **Subject 01** | ![Topo](./Report_Images_Step6_Topomaps/Subject_01_Topomaps.png) |
+| **Subject 02** | ![Topo](./Report_Images_Step6_Topomaps/Subject_02_Topomaps.png) |
+| **Subject 03** | ![Topo](./Report_Images_Step6_Topomaps/Subject_03_Topomaps.png) |
+| **Subject 04** | ![Topo](./Report_Images_Step6_Topomaps/Subject_04_Topomaps.png) |
+| **Subject 05** | ![Topo](./Report_Images_Step6_Topomaps/Subject_05_Topomaps.png) |
+| **Subject 06** | ![Topo](./Report_Images_Step6_Topomaps/Subject_06_Topomaps.png) |
+| **Subject 07** | ![Topo](./Report_Images_Step6_Topomaps/Subject_07_Topomaps.png) |
+| **Subject 08** | ![Topo](./Report_Images_Step6_Topomaps/Subject_08_Topomaps.png) |
+| **Subject 09** | ![Topo](./Report_Images_Step6_Topomaps/Subject_09_Topomaps.png) |
+| **Subject 10** | ![Topo](./Report_Images_Step6_Topomaps/Subject_10_Topomaps.png) |
+
+---
+
+## ۱۷. پیوست کد: رسم خودکار نقشه‌های مغزی
+
+کد زیر برای محاسبه توان باندها و رسم نقشه‌های توپوگرافی به صورت خودکار برای تمام فایل‌ها استفاده شده است:
+</div>
+
+```python
+# ==========================================
+# Ghasem Step 6: Topomaps (Spatial Distribution)
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 6: Plotting Topomaps (Theta, Alpha, Beta)")
+print("=" * 30)
+
+import matplotlib.pyplot as plt
+import numpy as np
+import mne
+
+# 1. تعریف باندهای فرکانسی
+freq_bands = {
+    "Theta (4-8 Hz)": (4, 8),
+    "Alpha (8-12 Hz)": (8, 12),
+    "Beta (12-30 Hz)": (12, 30)
+}
+
+# 2. محاسبه طیف کلی (PSD)
+print("Calculating Power Spectral Density (Welch)...")
+# محاسبه PSD روی داده نهایی
+spectrum = epochs_final.compute_psd(method='welch', fmin=1, fmax=40, n_fft=int(sfreq*2))
+psds, freqs = spectrum.get_data(return_freqs=True)
+psds_mean = psds.mean(axis=0)
+
+# 3. رسم نمودار
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig.suptitle('Spatial Distribution of Brain Rhythms (Power in dB)', fontsize=16)
+
+for ax, (band_name, (fmin, fmax)) in zip(axes, freq_bands.items()):
+    
+    # الف) برش فرکانسی
+    freq_indices = np.where((freqs >= fmin) & (freqs <= fmax))[0]
+    
+    # ب) میانگین‌گیری انرژی
+    band_power = psds_mean[:, freq_indices].mean(axis=1)
+    
+    # ج) تبدیل به دسی‌بل
+    band_power_db = 10 * np.log10(band_power)
+    
+    # د) رسم نقشه توپوگرافی (بدون پارامتر show_names)
+    im, _ = mne.viz.plot_topomap(
+        band_power_db,
+        epochs_final.info,
+        axes=ax,
+        show=False,
+        cmap='RdBu_r',
+        names=epochs_final.ch_names, # نام کانال‌ها را نگه می‌داریم
+        # show_names=False, <--- این خط حذف شد تا ارور برطرف شود
+        contours=6
+    )
+    
+    ax.set_title(band_name)
+
+# اضافه کردن نوار رنگ
+cbar_ax = fig.add_axes([0.92, 0.15, 0.015, 0.7])
+clb = fig.colorbar(im, cax=cbar_ax)
+clb.set_label('Power Spectral Density (dB)')
+
+print("Plotting complete. Check the new window.")
+plt.show()
+
+print("-" * 30)
+print("INTERPRETATION GUIDE:")
+print("1. Alpha Band: Look at the back of the head. Red means high relaxation.")
+print("2. Theta Band: Red spots might indicate drowsiness.")
+print("3. Beta Band: Usually lower power compared to Alpha.")
+print("-" * 30)
+```

@@ -381,3 +381,152 @@ print("  - Alpha Check: Do you see a bump around 10Hz (Brain signal)?")
 print("  - Shape Check: Does the curve generally go down (1/f shape)?")
 
 print("\nStep 4 Complete.")
+
+# ==========================================
+# Ghasem Step 5: Per-Channel PSD Analysis
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 5: Per-Channel PSD (Logarithmic)")
+print("=" * 30)
+
+import math
+
+# 1. تنظیم پارامترهای طیفی (طبق دستور: 0.5 تا 55 هرتز)
+fmin, fmax = 0.5, 60.0  # تا 60 می‌گیریم که حذف شدن 50 هرتز را ببینیم
+
+print("Calculating PSDs for comparison...")
+
+# محاسبه PSD برای داده خام (Raw)
+# برای اینکه مقایسه عادلانه باشد، از داده Raw فقط بخش‌های EEG را می‌گیریم
+psd_raw_inst = raw.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
+psds_raw, freqs = psd_raw_inst.get_data(return_freqs=True)
+# تبدیل به میانگین در طول زمان (چون Raw پیوسته است ولی خروجی PSD آرایه است)
+# psds_raw shape: (n_channels, n_freqs) - اینجا نیازی به تغییر خاصی نیست چون compute_psd روی Raw خودش میانگین می‌گیرد.
+
+# محاسبه PSD برای داده نهایی (Epochs Final)
+psd_clean_inst = epochs_final.compute_psd(method='welch', fmin=fmin, fmax=fmax, picks='eeg', n_fft=int(sfreq * 2))
+psds_clean, _ = psd_clean_inst.get_data(return_freqs=True)
+# psds_clean shape: (n_epochs, n_channels, n_freqs)
+# باید روی اپوک‌ها میانگین بگیریم تا به ابعاد (n_channels, n_freqs) برسیم
+psds_clean_mean = psds_clean.mean(axis=0)
+
+# 2. تنظیمات نمودار (Grid Layout)
+n_channels = len(epochs_final.ch_names)
+n_cols = 4  # تعداد ستون‌ها
+n_rows = math.ceil(n_channels / n_cols)  # محاسبه تعداد ردیف‌ها
+
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 3 * n_rows), constrained_layout=True)
+axes = axes.flatten()  # تبدیل ماتریس محورها به یک لیست ساده
+
+# 3. رسم نمودار برای هر کانال
+for idx, ch_name in enumerate(epochs_final.ch_names):
+    ax = axes[idx]
+
+    # دریافت داده‌های مربوط به آن کانال خاص
+    # نکته: ترتیب کانال‌ها در Raw و Epochs ممکن است متفاوت باشد، با اسم پیدا می‌کنیم
+    raw_ch_idx = raw.ch_names.index(ch_name)
+    clean_ch_idx = epochs_final.ch_names.index(ch_name)
+
+    # رسم داده خام (قرمز)
+    ax.plot(freqs, psds_raw[raw_ch_idx], color='red', alpha=0.6, linewidth=1, label='Before (Raw)')
+
+    # رسم داده تمیز (آبی)
+    ax.plot(freqs, psds_clean_mean[clean_ch_idx], color='blue', alpha=0.8, linewidth=1.5, label='After (Clean)')
+
+    # تنظیمات ظاهری (طبق دستور: محور عمودی لگاریتمی)
+    ax.set_yscale('log')  # محور عمودی لگاریتمی
+    ax.set_title(ch_name, fontsize=10, fontweight='bold')
+    ax.grid(True, which="both", ls="-", alpha=0.3)
+
+    # فقط برای نمودارهای ستون اول و ردیف آخر لیبل می‌گذاریم تا شلوغ نشود
+    if idx >= (n_rows - 1) * n_cols:
+        ax.set_xlabel('Frequency (Hz)')
+    if idx % n_cols == 0:
+        ax.set_ylabel(r'PSD (${\mu V^2}/{Hz}$)')
+
+    # خط چین برای 50 هرتز (چک کردن ناچ فیلتر)
+    ax.axvline(x=50, color='gray', linestyle='--', alpha=0.5, linewidth=0.8)
+
+# خاموش کردن محورهای اضافی (اگر تعداد کانال‌ها مضرب 4 نبود)
+for i in range(n_channels, len(axes)):
+    axes[i].axis('off')
+
+# اضافه کردن لجند کلی در بالای نمودار
+handles, labels = axes[0].get_legend_handles_labels()
+fig.legend(handles, labels, loc='upper center', ncol=2, fontsize=12)
+fig.suptitle('Per-Channel PSD: Before vs After Preprocessing', fontsize=16, y=1.02)
+
+plt.show()
+
+print("Step 5 Complete. Analysis:")
+print("1. 50Hz Noise: Check if the sharp spike at 50Hz (in Red) is gone or reduced in Blue.")
+print("2. Low Freq Drift: Check if the Red line is very high near 0-1 Hz and Blue is controlled.")
+print("3. Signal Preservation: Ensure Blue follows Red shape in Alpha/Beta (8-30 Hz) and isn't zero.")
+
+# ==========================================
+# Ghasem Step 6: Topomaps (Spatial Distribution)
+# ==========================================
+print("\n" + "=" * 30)
+print("STARTING STEP 6: Plotting Topomaps (Theta, Alpha, Beta)")
+print("=" * 30)
+
+import matplotlib.pyplot as plt
+import numpy as np
+import mne
+
+# 1. تعریف باندهای فرکانسی
+freq_bands = {
+    "Theta (4-8 Hz)": (4, 8),
+    "Alpha (8-12 Hz)": (8, 12),
+    "Beta (12-30 Hz)": (12, 30)
+}
+
+# 2. محاسبه طیف کلی (PSD)
+print("Calculating Power Spectral Density (Welch)...")
+# محاسبه PSD روی داده نهایی
+spectrum = epochs_final.compute_psd(method='welch', fmin=1, fmax=40, n_fft=int(sfreq * 2))
+psds, freqs = spectrum.get_data(return_freqs=True)
+psds_mean = psds.mean(axis=0)
+
+# 3. رسم نمودار
+fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+fig.suptitle('Spatial Distribution of Brain Rhythms (Power in dB)', fontsize=16)
+
+for ax, (band_name, (fmin, fmax)) in zip(axes, freq_bands.items()):
+    # الف) برش فرکانسی
+    freq_indices = np.where((freqs >= fmin) & (freqs <= fmax))[0]
+
+    # ب) میانگین‌گیری انرژی
+    band_power = psds_mean[:, freq_indices].mean(axis=1)
+
+    # ج) تبدیل به دسی‌بل
+    band_power_db = 10 * np.log10(band_power)
+
+    # د) رسم نقشه توپوگرافی (بدون پارامتر show_names)
+    im, _ = mne.viz.plot_topomap(
+        band_power_db,
+        epochs_final.info,
+        axes=ax,
+        show=False,
+        cmap='RdBu_r',
+        names=epochs_final.ch_names,  # نام کانال‌ها را نگه می‌داریم
+        # show_names=False, <--- این خط حذف شد تا ارور برطرف شود
+        contours=6
+    )
+
+    ax.set_title(band_name)
+
+# اضافه کردن نوار رنگ
+cbar_ax = fig.add_axes([0.92, 0.15, 0.015, 0.7])
+clb = fig.colorbar(im, cax=cbar_ax)
+clb.set_label('Power Spectral Density (dB)')
+
+print("Plotting complete. Check the new window.")
+plt.show()
+
+print("-" * 30)
+print("INTERPRETATION GUIDE:")
+print("1. Alpha Band: Look at the back of the head. Red means high relaxation.")
+print("2. Theta Band: Red spots might indicate drowsiness.")
+print("3. Beta Band: Usually lower power compared to Alpha.")
+print("-" * 30)
