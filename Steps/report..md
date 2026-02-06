@@ -311,17 +311,17 @@ print("All Processing Completed.")
 در جدول زیر، نقشه‌های توپوگرافی استخراج شده و لیست مؤلفه‌هایی که الگوریتم به صورت خودکار حذف کرده است، نمایش داده شده‌اند.
 
 | نام آزمودنی | نقشه‌های ICA (Topomap) | مؤلفه‌های حذف شده (Auto-Detected) |
-| :---: | :---: | :---: |
-| **Subject 01** | ![ICA](./Report_Images_Step3_Auto/Subject_01_ICA_Topomaps.png) | *(اعداد خروجی کد را اینجا بنویسید)* |
-| **Subject 02** | ![ICA](./Report_Images_Step3_Auto/Subject_02_ICA_Topomaps.png) | ... |
-| **Subject 03** | ![ICA](./Report_Images_Step3_Auto/Subject_03_ICA_Topomaps.png) | ... |
-| **Subject 04** | ![ICA](./Report_Images_Step3_Auto/Subject_04_ICA_Topomaps.png) | ... |
-| **Subject 05** | ![ICA](./Report_Images_Step3_Auto/Subject_05_ICA_Topomaps.png) | ... |
-| **Subject 06** | ![ICA](./Report_Images_Step3_Auto/Subject_06_ICA_Topomaps.png) | ... |
-| **Subject 07** | ![ICA](./Report_Images_Step3_Auto/Subject_07_ICA_Topomaps.png) | ... |
-| **Subject 08** | ![ICA](./Report_Images_Step3_Auto/Subject_08_ICA_Topomaps.png) | ... |
-| **Subject 09** | ![ICA](./Report_Images_Step3_Auto/Subject_09_ICA_Topomaps.png) | ... |
-| **Subject 10** | ![ICA](./Report_Images_Step3_Auto/Subject_10_ICA_Topomaps.png) | ... |
+| :---: | :---: |:---------------------------------:|
+| **Subject 01** | ![ICA](./Report_Images_Step3_Auto/Subject_01_ICA_Topomaps.png) |                ...                |
+| **Subject 02** | ![ICA](./Report_Images_Step3_Auto/Subject_02_ICA_Topomaps.png) |                ...                |
+| **Subject 03** | ![ICA](./Report_Images_Step3_Auto/Subject_03_ICA_Topomaps.png) |                ...                |
+| **Subject 04** | ![ICA](./Report_Images_Step3_Auto/Subject_04_ICA_Topomaps.png) |                ...                |
+| **Subject 05** | ![ICA](./Report_Images_Step3_Auto/Subject_05_ICA_Topomaps.png) |                ...                |
+| **Subject 06** | ![ICA](./Report_Images_Step3_Auto/Subject_06_ICA_Topomaps.png) |                ...                |
+| **Subject 07** | ![ICA](./Report_Images_Step3_Auto/Subject_07_ICA_Topomaps.png) |                ...                |
+| **Subject 08** | ![ICA](./Report_Images_Step3_Auto/Subject_08_ICA_Topomaps.png) |                ...                |
+| **Subject 09** | ![ICA](./Report_Images_Step3_Auto/Subject_09_ICA_Topomaps.png) |                ...                |
+| **Subject 10** | ![ICA](./Report_Images_Step3_Auto/Subject_10_ICA_Topomaps.png) |                ...                |
 
 *(نکته: تصاویر مربوط به امتیازدهی الگوریتم (Scores) و مقایسه سیگنال قبل و بعد از حذف نویز نیز در پوشه خروجی ذخیره شده‌اند).*
 
