@@ -255,7 +255,6 @@ psds_clean, freqs_clean = spectrum_clean.get_data(return_freqs=True)
 psd_clean_mean = 10 * np.log10(psds_clean.mean(axis=0).mean(axis=0))
 
 plt.figure(figsize=(10, 6))
-
 plt.plot(freqs_raw, psd_raw_mean, color='red', linestyle='--', label='Raw Data', linewidth=1.5)
 plt.plot(freqs_clean, psd_clean_mean, color='blue', label='Final Clean Data', linewidth=2)
 
