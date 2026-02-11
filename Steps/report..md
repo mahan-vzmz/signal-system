@@ -1,21 +1,19 @@
 <style>
-/* تنظیمات کلی صفحه */
 body {
     direction: rtl;
-    text-align: justify; /* تراز کردن متن از دو طرف */
+    text-align: justify; 
     font-family: "B Nazanin", "Lotus", "Vazirmatn", Tahoma, serif; /* اولویت با فونت‌های رسمی */
-    line-height: 1.8; /* فاصله خطوط استاندارد */
-    font-size: 14pt; /* سایز استاندارد متن فارسی */
+    line-height: 1.8; 
+    font-size: 14pt; 
     margin: 0;
     padding: 40px;
     color: #250d0d;
-    background-color: #ffffff; /* پس‌زمینه سفید برای خوانایی و پرینت */
+    background-color: #ffffff; 
 }
 
-/* تنظیمات تیترها */
 h1, h2, h3 {
-    font-family: "B Titr", "Vazirmatn", sans-serif; /* فونت تیتر ضخیم */
-    color: #403232; /* رنگ سرمه‌ای تیره برای رسمیت */
+    font-family: "B Titr", "Vazirmatn", sans-serif; 
+    color: #403232;
     margin-top: 40px;
     margin-bottom: 20px;
 }
@@ -38,13 +36,11 @@ h3 {
     font-weight: bold;
 }
 
-/* پاراگراف و متون */
 p {
     margin-bottom: 15px;
-    text-indent: 30px; /* تورفتگی خط اول پاراگراف (استاندارد فارسی) */
+    text-indent: 30px; 
 }
 
-/* لیست‌ها */
 ul, ol {
     margin-right: 20px;
     margin-bottom: 20px;
@@ -54,25 +50,24 @@ li {
     margin-bottom: 8px;
 }
 
-/* استایل کدها */
 pre {
     direction: ltr;
     text-align: left;
-    background: #f4f6f7; /* خاکستری خیلی روشن */
+    background: #f4f6f7; 
     border: 1px solid #cfd8dc;
-    border-left: 5px solid #2c3e50; /* خط رنگی سمت چپ برای زیبایی */
+    border-left: 5px solid #2c3e50;
     padding: 15px;
     border-radius: 4px;
     font-family: "Consolas", "Courier New", monospace;
     font-size: 13px;
     line-height: 1.5;
-    overflow-x: auto; /* اسکرول افقی برای کدهای طولانی */
+    overflow-x: auto; 
     margin: 25px 0;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 code {
-    background-color: #fce4ec; /* هایلایت کلمات کلیدی در متن */
+    background-color: #fce4ec; 
     padding: 2px 5px;
     border-radius: 3px;
     font-family: "Consolas", monospace;
@@ -81,7 +76,7 @@ code {
 }
 
 pre code {
-    background-color: transparent; /* حذف پس‌زمینه کد داخل بلوک pre */
+    background-color: transparent; 
     padding: 0;
     color: #333;
 }
@@ -102,16 +97,15 @@ th, td {
 }
 
 th {
-    background-color: #ecf0f1; /* هدر جدول طوسی روشن */
+    background-color: #ecf0f1; 
     color: #2c3e50;
     font-weight: bold;
 }
 
 tr:nth-child(even) {
-    background-color: #f9f9f9; /* یکی در میان رنگی شدن سطرها */
+    background-color: #f9f9f9; 
 }
 
-/* تصاویر */
 img {
     display: block;
     margin: 30px auto;
@@ -122,7 +116,6 @@ img {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* نقل قول */
 blockquote {
     border-right: 4px solid #3498db;
     background-color: #eef8ff;
@@ -131,12 +124,6 @@ blockquote {
     color: #555;
     font-style: italic;
     border-radius: 4px;
-}
-
-/* تنظیمات پرینت (PDF) */
-@page {
-    margin: 2.5cm;
-    size: A4;
 }
 </style>
 
