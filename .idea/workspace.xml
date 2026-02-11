@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="final edit of report">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Steps/report..md" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/report..md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +111,7 @@
       <workItem from="1770467826066" duration="33000" />
       <workItem from="1770824609173" duration="8992000" />
       <workItem from="1770833719120" duration="14000" />
-      <workItem from="1770833734953" duration="330000" />
+      <workItem from="1770833734953" duration="928000" />
     </task>
     <task id="LOCAL-00001" summary="start second_step">
       <option name="closed" value="true" />
@@ -185,7 +185,15 @@
       <option name="project" value="LOCAL" />
       <updated>1770833312453</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="final edit of report">
+      <option name="closed" value="true" />
+      <created>1770834181057</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1770834181057</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

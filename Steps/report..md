@@ -8,14 +8,14 @@ body {
     font-size: 14pt; /* سایز استاندارد متن فارسی */
     margin: 0;
     padding: 40px;
-    color: #000000;
+    color: #250d0d;
     background-color: #ffffff; /* پس‌زمینه سفید برای خوانایی و پرینت */
 }
 
 /* تنظیمات تیترها */
 h1, h2, h3 {
     font-family: "B Titr", "Vazirmatn", sans-serif; /* فونت تیتر ضخیم */
-    color: #2c3e50; /* رنگ سرمه‌ای تیره برای رسمیت */
+    color: #403232; /* رنگ سرمه‌ای تیره برای رسمیت */
     margin-top: 40px;
     margin-bottom: 20px;
 }
@@ -23,13 +23,13 @@ h1, h2, h3 {
 h1 {
     font-size: 26px;
     text-align: center;
-    border-bottom: 3px solid #2c3e50;
+    border-bottom: 3px solid #484885;
     padding-bottom: 15px;
 }
 
 h2 {
     font-size: 22px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #250d0d;
     padding-bottom: 10px;
 }
 
