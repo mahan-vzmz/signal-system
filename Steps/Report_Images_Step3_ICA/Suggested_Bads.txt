@@ -1,7 +1,0 @@
-Subject_03: [np.int64(0), np.int64(4)]
-Subject_04: [np.int64(2)]
-Subject_05: [np.int64(0)]
-Subject_06: [np.int64(1), np.int64(0)]
-Subject_08: [np.int64(2), np.int64(1)]
-Subject_09: [np.int64(1)]
-Subject_10: [np.int64(6)]
