@@ -81,7 +81,6 @@ pre code {
     color: #333;
 }
 
-/* جداول */
 table {
     width: 100%;
     border-collapse: collapse;
