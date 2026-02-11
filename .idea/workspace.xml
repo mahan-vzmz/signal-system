@@ -4,30 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="edit and clean the project">
+    <list default="true" id="c2111df8-ddba-4842-8231-b61177d06c56" name="Changes" comment="final edit of report">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/EighthStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/EighthStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/FifthStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FifthStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/FirstStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FirstStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/FirstStep2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/FourthStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/FourthStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_01_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_02_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_03_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_04_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_05_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_06_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_07_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_08_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_09_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Subject_10_ICA_Components.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/Report_Images_Step3_ICA/Suggested_Bads.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/SecondStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/SecondStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/SeventhStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/SeventhStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/SixthStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/SixthStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/ThirdStep.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/ThirdStep.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Steps/report..md" beforeDir="false" afterPath="$PROJECT_DIR$/Steps/report..md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,7 +109,9 @@
       <workItem from="1770403036535" duration="4158000" />
       <workItem from="1770407671797" duration="45000" />
       <workItem from="1770467826066" duration="33000" />
-      <workItem from="1770824609173" duration="8333000" />
+      <workItem from="1770824609173" duration="8992000" />
+      <workItem from="1770833719120" duration="14000" />
+      <workItem from="1770833734953" duration="330000" />
     </task>
     <task id="LOCAL-00001" summary="start second_step">
       <option name="closed" value="true" />
@@ -197,7 +177,15 @@
       <option name="project" value="LOCAL" />
       <updated>1770404155234</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="final edit of report">
+      <option name="closed" value="true" />
+      <created>1770833312453</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1770833312453</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -221,7 +209,8 @@
     <MESSAGE value="complete fifth_step and sixth_step" />
     <MESSAGE value="complete step7 and last_step. FINISH the project" />
     <MESSAGE value="edit and clean the project" />
-    <option name="LAST_COMMIT_MESSAGE" value="edit and clean the project" />
+    <MESSAGE value="final edit of report" />
+    <option name="LAST_COMMIT_MESSAGE" value="final edit of report" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/signal_system$FirstStep3.coverage" NAME="FirstStep3 Coverage Results" MODIFIED="1767631315016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/FirstStep" />
